@@ -180,8 +180,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: () => request<Health>("/api/health"),
-  saveApiKey: (key: string) =>
-    request<{ ok: boolean; message: string }>("/api/settings/api-key", { method: "POST", body: JSON.stringify({ key }) }),
+  saveApiKey: (key: string, workspace_id = "") =>
+    request<{ ok: boolean; message: string }>("/api/settings/api-key", {
+      method: "POST",
+      body: JSON.stringify({ key, workspace_id }),
+    }),
   settings: () => request<Record<string, Record<string, unknown>>>("/api/settings"),
   saveSettings: (body: Record<string, unknown>) =>
     request<Record<string, Record<string, unknown>>>("/api/settings", { method: "PUT", body: JSON.stringify(body) }),

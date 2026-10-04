@@ -96,3 +96,13 @@ def test_usernames_are_not_treated_as_secrets():
     crypto.decrypt_json(token)
     assert redact("Admin menu") == "Admin menu"
     assert redact("pw admin-pass-77") == "pw ***"
+
+
+def test_workspace_header_only_when_configured(monkeypatch):
+    from app.ai.client import workspace_headers
+
+    monkeypatch.setenv("ANTHROPIC_WORKSPACE_ID", "")
+    assert workspace_headers() == {}
+    monkeypatch.setenv("ANTHROPIC_WORKSPACE_ID", "wrkspc_abc")
+    assert workspace_headers() == {"anthropic-workspace-id": "wrkspc_abc"}
+    assert workspace_headers("") == {}

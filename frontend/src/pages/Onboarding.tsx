@@ -15,14 +15,19 @@ export function Onboarding() {
   const navigate = useNavigate();
   const health = useQuery({ queryKey: ["health"], queryFn: api.health });
   const [key, setKey] = useState("");
+  const [workspace, setWorkspace] = useState("");
+  const [needsWorkspace, setNeedsWorkspace] = useState(false);
   const save = useMutation({
-    mutationFn: () => api.saveApiKey(key),
+    mutationFn: () => api.saveApiKey(key, workspace),
     onSuccess: () => {
       toast.success("API key validated and saved to .env");
       setKey("");
       qc.invalidateQueries({ queryKey: ["health"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => {
+      if (e.message.includes("workspace")) setNeedsWorkspace(true);
+      toast.error(e.message);
+    },
   });
   const demo = useMutation({
     mutationFn: api.startDemo,
@@ -67,6 +72,16 @@ export function Onboarding() {
                     {save.isPending ? <Loader2 className="animate-spin" /> : <Lock />} Validate & save
                   </Button>
                 </form>
+                {needsWorkspace && (
+                  <div className="mt-3">
+                    <Label htmlFor="workspace-id">Workspace ID</Label>
+                    <Input id="workspace-id" placeholder="wrkspc_…" value={workspace} onChange={(e) => setWorkspace(e.target.value)} />
+                    <Hint>
+                      Your key is not tied to a workspace. Find the ID in the Console under Settings → Workspaces, or create
+                      a key inside a workspace instead.
+                    </Hint>
+                  </div>
+                )}
                 <Hint>
                   Get a key at{" "}
                   <a className="text-blue-400 hover:underline" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer">

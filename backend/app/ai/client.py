@@ -64,6 +64,20 @@ class AIResponseError(RuntimeError):
     pass
 
 
+WORKSPACE_HINT = (
+    "This key belongs to your user account rather than a workspace, so Anthropic needs to know which workspace "
+    "to bill. Enter the workspace ID (Console → Settings → Workspaces, it starts with “wrkspc_”), "
+    "or create a key inside a workspace instead."
+)
+
+
+def workspace_headers(workspace_id: str | None = None) -> dict[str, str]:
+    """User-level keys (not scoped to a workspace) must name the workspace on every request."""
+    load_env()
+    ws = (workspace_id if workspace_id is not None else os.environ.get("ANTHROPIC_WORKSPACE_ID", "")).strip()
+    return {"anthropic-workspace-id": ws} if ws else {}
+
+
 def estimate_cost(
     model: str, input_tokens: int, output_tokens: int, cache_read: int = 0, cache_write: int = 0
 ) -> float:
@@ -118,15 +132,22 @@ class AIClient:
                 api_key=key,
                 timeout=float(self.settings.get("request_timeout_s", 180)),
                 max_retries=int(self.settings.get("max_retries", 3)),
+                default_headers=workspace_headers(),
             )
         return self._client
 
     @staticmethod
-    def validate_key(key: str) -> tuple[bool, str]:
+    def validate_key(key: str, workspace_id: str | None = None) -> tuple[bool, str]:
         """Cheap key check used by the onboarding screen: list models (no tokens spent)."""
         try:
-            anthropic.Anthropic(api_key=key, max_retries=1, timeout=20.0).models.list(limit=1)
+            anthropic.Anthropic(
+                api_key=key, max_retries=1, timeout=20.0, default_headers=workspace_headers(workspace_id)
+            ).models.list(limit=1)
             return True, "API key is valid."
+        except anthropic.BadRequestError as exc:
+            if "workspace" in str(exc).lower():
+                return False, WORKSPACE_HINT
+            return False, f"Anthropic rejected the request: {exc.message}"
         except anthropic.AuthenticationError:
             return False, "Anthropic rejected this API key."
         except anthropic.PermissionDeniedError:

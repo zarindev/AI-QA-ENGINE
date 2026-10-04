@@ -44,6 +44,7 @@ def health() -> dict[str, Any]:
 
 class ApiKeyIn(BaseModel):
     key: str
+    workspace_id: str = ""
 
 
 @router.post("/settings/api-key")
@@ -51,11 +52,15 @@ def save_api_key(body: ApiKeyIn) -> dict[str, Any]:
     key = body.key.strip()
     if not key.startswith("sk-ant-"):
         raise HTTPException(400, "Anthropic API keys start with “sk-ant-”.")
+    workspace = body.workspace_id.strip()
+    if workspace and not workspace.startswith("wrkspc_"):
+        raise HTTPException(400, "Workspace IDs start with “wrkspc_”.")
     register_secret(key)
-    ok, message = AIClient.validate_key(key)
+    ok, message = AIClient.validate_key(key, workspace or None)
     if not ok:
         raise HTTPException(400, message)
     set_env_value("ANTHROPIC_API_KEY", key)
+    set_env_value("ANTHROPIC_WORKSPACE_ID", workspace)
     return {"ok": True, "message": "API key saved to .env", "api_key_hint": _masked_key()}
 
 

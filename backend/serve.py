@@ -50,9 +50,9 @@ def main() -> None:
 
     port = pick_port(args.port)
     if port != args.port:
-        print(f"Port {args.port} is busy (another app is using it) - using {port} instead.")
+        print(f"Port {args.port} is busy (another app is using it) - using {port} instead.", flush=True)
     url = f"http://localhost:{port}"
-    print(f"\n  QA Pilot is starting at {url}\n  Press Ctrl+C to stop.\n")
+    print(f"\n  QA Pilot is starting at {url}\n  Press Ctrl+C to stop.\n", flush=True)
     if not args.no_browser:
 
         def open_browser() -> None:

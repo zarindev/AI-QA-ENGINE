@@ -228,6 +228,11 @@ class AIClient:
         try:
             response = fn(**kwargs)
         except anthropic.BadRequestError as exc:
+            if "credit balance" in str(exc).lower():
+                raise AIUnavailable(
+                    "Your Anthropic account has no API credits left. Add credits in the Console under "
+                    "Settings → Billing, then resume the run."
+                ) from exc
             if "fallback" in str(exc).lower() and kwargs.get("fallbacks"):
                 log.warning(
                     "Server-side fallbacks were rejected for this account/model; retrying without them."

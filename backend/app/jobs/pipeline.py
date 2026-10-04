@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.ai.client import AIClient, BudgetExceeded
+from app.ai.client import AIClient, AIUnavailable, BudgetExceeded
 from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.explore.stage import run_explore
@@ -42,6 +42,8 @@ def execute(repo: Repository, tracker: RunTracker, overrides: dict[str, Any] | N
         )
     except RunCancelled:
         tracker.cancel()
+    except AIUnavailable as exc:
+        tracker.fail(str(exc))  # e.g. no API credits: a plain explanation, resumable once fixed
     except BudgetExceeded as exc:
         tracker.fail(f"Token budget reached: {exc}")
     except Exception as exc:  # the job thread must never die silently

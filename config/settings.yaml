@@ -1,0 +1,118 @@
+# QA Pilot default settings. Values here are defaults; per-user overrides
+# made in the UI are saved to workspace/settings.json and win over this file.
+
+ai:
+  model: claude-sonnet-5-5
+  effort: medium              # low | medium | high | xhigh | max
+  max_tokens: 16000
+  use_server_fallbacks: true  # re-run refused requests on Anthropic's recommended fallback model
+  run_token_budget: 2000000   # hard stop for one run (input + output tokens)
+  response_cache: true        # reuse identical AI answers from workspace/.cache/ai
+  request_timeout_s: 180
+  max_retries: 3
+
+browser:
+  headless: true
+  window_width: 1440
+  window_height: 900
+  page_load_timeout_s: 30
+  implicit_wait_s: 0
+  user_agent_suffix: "QA-Pilot"
+
+crawl:
+  max_pages: 40
+  max_depth: 4
+  rate_limit_s: 0.5           # polite delay between page loads
+  click_discovery: true       # click link-like elements without real hrefs (SPA navigation)
+  max_clicks_per_page: 12
+  slow_page_ms: 3000
+  ignore_query_params:
+    - utm_source
+    - utm_medium
+    - utm_campaign
+    - utm_term
+    - utm_content
+    - gclid
+    - fbclid
+    - ref
+    - _ga
+  exclude_patterns:
+    - "\\.(pdf|zip|png|jpe?g|gif|svg|mp4|mp3|docx?|xlsx?|csv)$"
+    - "^mailto:"
+    - "^tel:"
+    - "^javascript:"
+
+viewports:
+  desktop: [1440, 900]
+  tablet: [768, 1024]
+  mobile: [390, 844]
+
+safety:
+  # Safe Mode never clicks elements whose text, label or surrounding context
+  # matches one of these words. Full Mode (staging/test only) relaxes this list
+  # but still applies `always_blocked`.
+  deny_list:
+    - delete
+    - remove
+    - destroy
+    - erase
+    - purge
+    - cancel
+    - void
+    - refund
+    - pay
+    - payment
+    - purchase
+    - buy
+    - checkout
+    - place order
+    - order now
+    - submit order
+    - confirm order
+    - finish
+    - transfer
+    - withdraw
+    - deposit
+    - send money
+    - unsubscribe
+    - deactivate
+    - disable
+    - archive
+    - reset
+    - revoke
+    - terminate
+    - discharge
+    - approve
+    - reject
+    - publish
+    - send
+    - import
+    - upload
+  # Never clicked during exploration because they end the logged-in session.
+  session_enders:
+    - logout
+    - log out
+    - sign out
+    - signout
+    - log off
+  # Blocked in every mode.
+  always_blocked:
+    - delete account
+    - close account
+    - delete all
+    - drop database
+    - factory reset
+  # Forms that are safe to submit in Safe Mode.
+  safe_form_hints:
+    - search
+    - filter
+    - query
+    - find
+    - sort
+
+privacy:
+  blur_by_default_domains: [healthcare, banking]
+
+server:
+  host: 127.0.0.1
+  port: 8000

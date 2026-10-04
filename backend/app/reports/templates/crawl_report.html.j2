@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QA Pilot · Crawl report · {{ project.name }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0F1C; --panel: #111827; --panel-2: #161f33; --border: #1f2a44; --text: #E5E7EB; --muted: #94A3B8;
+    --primary: #2563EB; --pass: #16A34A; --fail: #DC2626; --warn: #F59E0B; --trivial: #64748B;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.55 Inter, system-ui, -apple-system, Segoe UI, sans-serif; }
+  code, .mono { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 12.5px; }
+  a { color: #93c5fd; text-decoration: none; } a:hover { text-decoration: underline; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 32px 24px 64px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #2563EB, #1d4ed8 60%, #16A34A);
+          display: grid; place-items: center; font-weight: 700; box-shadow: 0 0 24px rgba(37,99,235,.45); }
+  h1 { font-size: 22px; margin: 0; } h2 { font-size: 17px; margin: 36px 0 12px; } h3 { font-size: 15px; margin: 20px 0 10px; }
+  .muted { color: var(--muted); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+  .card .num { font-size: 28px; font-weight: 700; } .card .lbl { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--panel-2); color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  tr:last-child td { border-bottom: 0; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .sev-critical { background: rgba(220,38,38,.18); color: #fca5a5; } .sev-major { background: rgba(245,158,11,.18); color: #fcd34d; }
+  .sev-minor { background: rgba(37,99,235,.18); color: #93c5fd; } .sev-trivial { background: rgba(100,116,139,.25); color: #cbd5e1; }
+  .ok { background: rgba(22,163,74,.18); color: #86efac; } .bad { background: rgba(220,38,38,.18); color: #fca5a5; }
+  details summary { cursor: pointer; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .page { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .page img { width: 100%; display: block; border-bottom: 1px solid var(--border); aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
+  .page .body { padding: 10px 12px; } .page .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .page .url { color: var(--muted); font-size: 12px; word-break: break-all; }
+  .callout { background: rgba(37,99,235,.08); border: 1px solid rgba(37,99,235,.35); border-radius: 12px; padding: 12px 14px; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">Q</div>
+      <div>
+        <h1>{{ project.name }} — exploration report</h1>
+        <div class="muted"><a href="{{ project.url }}">{{ project.url }}</a> · run <span class="mono">{{ run.id }}</span> · {{ run.mode|upper }} mode · {{ project.environment }}</div>
+      </div>
+    </div>
+    <div class="muted mono">{{ crawl.started_at.strftime('%Y-%m-%d %H:%M') }} UTC</div>
+  </header>
+
+  <div class="cards">
+    <div class="card"><div class="num">{{ crawl.pages|length }}</div><div class="lbl">Pages explored</div></div>
+    <div class="card"><div class="num">{{ crawl.roles|length }}</div><div class="lbl">Roles (incl. public)</div></div>
+    <div class="card"><div class="num" style="color:#fca5a5">{{ severity_counts.get('critical', 0) }}</div><div class="lbl">Critical findings</div></div>
+    <div class="card"><div class="num" style="color:#fcd34d">{{ severity_counts.get('major', 0) }}</div><div class="lbl">Major findings</div></div>
+    <div class="card"><div class="num" style="color:#93c5fd">{{ severity_counts.get('minor', 0) + severity_counts.get('trivial', 0) }}</div><div class="lbl">Minor findings</div></div>
+    <div class="card"><div class="num">{{ crawl.blocked_actions|length }}</div><div class="lbl">Actions blocked by Safe Mode</div></div>
+  </div>
+
+  <h2>Roles</h2>
+  <table>
+    <tr><th>Role</th><th>Login</th><th>Pages</th><th>Details</th></tr>
+    {% for r in crawl.roles %}
+    <tr>
+      <td><strong>{{ r.role }}</strong></td>
+      <td>{% if r.login_ok is none %}<span class="pill sev-trivial">not needed</span>{% elif r.login_ok %}<span class="pill ok">logged in</span>{% else %}<span class="pill bad">failed</span>{% endif %}</td>
+      <td>{{ r.pages }}</td>
+      <td class="muted">{{ r.login_message }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Findings from automatic checks</h2>
+  {% if findings %}
+  <table>
+    <tr><th>ID</th><th>Severity</th><th>Finding</th><th>Where</th><th>Seen</th></tr>
+    {% for f in findings %}
+    <tr>
+      <td class="mono">{{ f.id }}</td>
+      <td><span class="pill sev-{{ f.severity }}">{{ f.severity|capitalize }}</span></td>
+      <td><strong>{{ f.title }}</strong><div class="muted mono" style="margin-top:4px; word-break: break-word">{{ f.detail }}</div>
+        {% if f.data.pages and f.data.pages|length > 1 %}
+        <details><summary>{{ f.data.pages|length }} pages</summary>
+          <ul>{% for p in f.data.pages %}<li class="mono">[{{ p.role }}] {{ p.url }}</li>{% endfor %}</ul>
+        </details>{% endif %}
+      </td>
+      <td><a href="{{ f.page_url }}" class="mono">{{ f.page_url|truncate(60) }}</a><div class="muted">role: {{ f.role }}</div>
+        {% if f.evidence %}<a href="{{ asset_prefix }}{{ f.evidence[0] }}">screenshot</a>{% endif %}</td>
+      <td>{{ f.data.occurrences or 1 }}×</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div class="callout">No automatic-check findings. Functional bugs are found by the generated tests in later stages.</div>
+  {% endif %}
+
+  {% for role, pages in pages_by_role.items() %}
+  <h2>Pages · {{ role }} <span class="muted" style="font-weight:400">({{ pages|length }})</span></h2>
+  <div class="grid">
+    {% for p in pages %}
+    <div class="page">
+      <a href="{{ asset_prefix }}{{ p.screenshot }}"><img loading="lazy" src="{{ asset_prefix }}{{ p.thumbnail }}" alt="Screenshot of {{ p.title or p.url }}"></a>
+      <div class="body">
+        <div class="title">{{ p.title or '(no title)' }}</div>
+        <div class="url mono">{{ p.url_template }}</div>
+        <div class="muted" style="font-size:12px; margin-top:6px">
+          <span class="mono">{{ p.id }}</span> ·
+          {% if p.status_code %}HTTP {{ p.status_code }} · {% endif %}
+          {% if p.load_time_ms %}{{ '%.1f'|format(p.load_time_ms / 1000) }}s · {% endif %}
+          {{ p.elements|length }} elements · {{ p.forms|length }} forms · via {{ p.discovered_via }}
+          {% if p.is_login_page %} · <span class="pill sev-minor">login</span>{% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  {% if crawl.blocked_actions %}
+  <h2>Actions Safe Mode refused</h2>
+  <table>
+    <tr><th>Role</th><th>Action</th><th>Target</th><th>Reason</th></tr>
+    {% for b in crawl.blocked_actions %}
+    <tr><td>{{ b.role }}</td><td>{{ b.action }}</td><td class="mono">{{ b.target }}</td><td class="muted">{{ b.reason }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+
+  <footer>Generated by QA Pilot {{ version }} · {{ run.options.get('browser', '') }} · All data is stored locally in this run folder.</footer>
+</div>
+</body>
+</html>

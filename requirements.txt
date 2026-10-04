@@ -1,0 +1,14 @@
+# Runtime dependencies (pinned). No database drivers or ORMs, by design.
+anthropic==1.11.0
+selenium==4.50.0
+pydantic==2.13.5
+PyYAML==6.0.3
+python-dotenv==1.2.4
+filelock==4.0.10
+cryptography==50.0.2
+Jinja2==3.1.6
+pillow==12.3.0
+typer==0.27.2
+rich==15.0.0
+networkx==3.7
+Faker==40.40.0

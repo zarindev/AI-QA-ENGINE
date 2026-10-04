@@ -1,0 +1,13 @@
+<!doctype html><html><head><title>Sign in</title></head><body><h1>Sign in</h1>
+<form id="login"><label for="u">Email</label><input id="u" name="email" type="email">
+<label for="p">Password</label><input id="p" name="password" type="password">
+<div class="error" style="display:none" id="err">Invalid credentials</div>
+<button type="submit">Log in</button></form>
+<script>
+document.getElementById('login').addEventListener('submit', e => {
+  e.preventDefault();
+  if (document.getElementById('u').value === 'doc@example.test' && document.getElementById('p').value === 'Sup3r-Secret!') {
+    localStorage.setItem('session', 'doc'); location.href = 'dashboard.html';
+  } else { document.getElementById('err').style.display = 'block'; }
+});
+</script></body></html>

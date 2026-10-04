@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import {
-  AlertTriangle, Brain, Coins, ListChecks, ExternalLink, FileText, Image as ImageIcon, Loader2, Network, Radio, RotateCcw, ShieldBan, Square,
+  AlertTriangle, Brain, Bug as BugIcon, ClipboardList, Coins, ListChecks, ExternalLink, FileText, Image as ImageIcon, Loader2, Network, Radio, RotateCcw, ShieldBan, Square,
 } from "lucide-react";
 import { api, fileUrl, type Run } from "@/lib/api";
 import { DOMAIN_LABELS, duration, pct } from "@/lib/utils";
@@ -51,7 +51,9 @@ export function RunOverview() {
             {done.profile && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/profile`}><Brain /> Site profile</Link></Button>}
             {done.model && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/model`}><Network /> Site model</Link></Button>}
             {done.requirements && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/requirements`}><FileText /> Requirements</Link></Button>}
-            {done.testcases && <Button asChild><Link to={`/projects/${slug}/runs/${runId}/tests`}><ListChecks /> Review test cases</Link></Button>}
+            {done.bugs && <Button asChild><Link to={`/projects/${slug}/runs/${runId}/bugs`}><BugIcon /> Bugs</Link></Button>}
+            {done.results && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/results`}><ClipboardList /> Results</Link></Button>}
+            {done.testcases && <Button variant={done.results ? "secondary" : "primary"} asChild><Link to={`/projects/${slug}/runs/${runId}/tests`}><ListChecks /> Review test cases</Link></Button>}
             {done.report && <Button variant="ghost" asChild><a href={fileUrl(slug, runId, "exports/crawl_report.html")} target="_blank" rel="noreferrer"><FileText /> HTML report</a></Button>}
             {live && <Button variant="danger" onClick={() => cancel.mutate()}><Square /> Stop</Button>}
             {["interrupted", "failed", "cancelled"].includes(r.status) && <Button onClick={() => resume.mutate()} disabled={resume.isPending}><RotateCcw /> Resume</Button>}
@@ -83,7 +85,8 @@ function LiveView({ slug, runId, events, live }: { slug: string; runId: string; 
     <Card className="overflow-hidden">
       <CardHeader className="pb-1">
         <CardTitle className="flex items-center gap-2">{live ? <Radio className="size-4 animate-pulse text-red-400" /> : <ImageIcon className="size-4" />} {live ? "Live browser" : "Last screen"}</CardTitle>
-        {latest && <Badge tone="primary">{latest.role}</Badge>}
+        {latest?.role && <Badge tone="primary">{latest.role}</Badge>}
+        {latest?.test_id && !latest.role && <Badge tone="primary">{latest.test_id}</Badge>}
       </CardHeader>
       <CardContent>
         <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-line bg-black/40">
@@ -102,18 +105,32 @@ function LiveView({ slug, runId, events, live }: { slug: string; runId: string; 
   );
 }
 
+function Ticker({ events }: { events: RunEvent[] }) {
+  // the latest result per test (a run can have several execution passes)
+  const latest = new Map<string, string>();
+  for (const e of events) if (e.test_id && e.result) latest.set(e.test_id, e.result);
+  if (latest.size === 0) return null;
+  const n = (k: string) => [...latest.values()].filter((v) => v === k).length;
+  return (
+    <div className="flex items-center gap-3 font-mono text-xs">
+      <span className="text-green-400">✓ {n("pass")}</span><span className="text-red-400">✗ {n("fail")}</span>
+      <span className="text-amber-400">⊘ {n("blocked")}</span>{n("error") > 0 && <span className="text-faint">! {n("error")}</span>}
+    </div>
+  );
+}
+
 function Narration({ events, live, run }: { events: RunEvent[]; live: boolean; run: Run }) {
   const items = events.filter((e) => e.message && e.type !== "usage").slice(-60).reverse();
   return (
     <Card>
-      <CardHeader className="pb-1"><CardTitle>What QA Pilot is doing</CardTitle>{live && <span className="text-xs text-faint">{run.message}</span>}</CardHeader>
+      <CardHeader className="pb-1"><CardTitle>What QA Pilot is doing</CardTitle><Ticker events={events} />{live && !events.some((e) => e.result) && <span className="text-xs text-faint">{run.message}</span>}</CardHeader>
       <CardContent>
         <ol className="scrollbar-thin max-h-[340px] space-y-1.5 overflow-y-auto pr-1">
           {items.length === 0 && <li className="text-sm text-faint">No events yet.</li>}
           {items.map((e, i) => (
             <li key={`${e.at}-${i}`} className="flex gap-2 text-[13px]">
               <span className="w-14 shrink-0 font-mono text-[11px] text-faint">{new Date(e.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" })}</span>
-              <span className={e.type === "stage_done" ? "text-green-400" : e.type === "run_failed" ? "text-red-400" : "text-muted"}>{e.error ?? e.message}</span>
+              <span className={e.type === "stage_done" || e.result === "pass" ? "text-green-400" : e.type === "run_failed" || e.result === "fail" ? "text-red-400" : e.result === "blocked" ? "text-amber-400" : "text-muted"}>{e.error ?? e.message}</span>
             </li>
           ))}
         </ol>

@@ -109,7 +109,7 @@ def test_run_pipeline_end_to_end(client, fixture_site, settings):
             break
         time.sleep(1)
     assert state["status"] == "completed", state.get("error")
-    assert all(state["available"].values())
+    assert all(v for k, v in state["available"].items() if k not in ("results", "bugs"))
     assert (
         state["stages"]["understand"]["status"] == "done"
         and state["stages"]["execute"]["status"] == "skipped"
@@ -140,3 +140,36 @@ def test_run_pipeline_end_to_end(client, fixture_site, settings):
     assert "event: history" in body and "run_completed" in body and "event: state" in body
     listing = client.get(f"/api/projects/{slug}/runs").json()
     assert listing[0]["id"] == run_id and listing[0]["domain"] == profile["domain"]
+
+    # Execute: rule-runner cases need no AI. Agent cases are reported as blocked without an API key.
+    base = f"/api/projects/{slug}/runs/{run_id}"
+    cases = client.get(f"{base}/testcases").json()["cases"]
+    chosen = [c["id"] for c in cases if c["technique"] in ("smoke", "permission", "ui_responsive")][:6]
+    chosen += [c["id"] for c in cases if c["technique"] == "crud"][:1]
+    assert client.post(f"{base}/execute", json={"case_ids": chosen}).status_code == 202
+    deadline = time.time() + 300
+    while time.time() < deadline and client.get(base).json()["running"]:
+        time.sleep(1)
+    state = client.get(base).json()
+    assert state["status"] == "completed", state.get("error")
+    results = {r["test_case_id"]: r for r in client.get(f"{base}/results").json()["results"]}
+    assert set(results) == set(chosen)
+    crud = next(r for r in results.values() if r["technique"] == "crud")
+    assert crud["result"] == "blocked"  # Safe Mode run + no AI key
+    smoke = [r for r in results.values() if r["technique"] == "smoke"]
+    assert smoke and any(r["result"] == "fail" for r in smoke)  # about.html throws a JS error
+    failed = [r for r in results.values() if r["result"] == "fail"]
+    assert all(r["reproducibility"] == "3/3" for r in failed)  # re-run twice by the rule runner
+    bugs = client.get(f"{base}/bugs").json()["bugs"]
+    assert bugs and all(
+        b["id"].startswith("BUG-") and b["steps_to_reproduce"] and b["expected"] for b in bugs
+    )
+    js = next(b for b in bugs if b["category"] == "js_error")
+    assert (
+        js["annotated_screenshot"]
+        and client.get(f"{base}/files/{js['annotated_screenshot']}").status_code == 200
+    )
+    ex = client.get(f"{base}/executions/{failed[0]['test_case_id']}").json()
+    assert len(ex["attempts"]) == 3 and ex["attempts"][0]["steps"][0]["screenshot_after"].endswith(".jpg")
+    upd = client.patch(f"{base}/bugs/{js['id']}", json={"status": "confirmed"}).json()
+    assert upd["status"] == "confirmed"

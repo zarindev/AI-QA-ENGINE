@@ -317,5 +317,7 @@ class AIClient:
         kwargs["messages"] = messages
         if tools:
             kwargs["tools"] = tools
-            kwargs["tool_choice"] = {"type": "auto"}
+            # Forced tool choice is not available on current models: "auto" + the prompt asks for one tool call,
+            # and parallel calls are disabled so each turn is exactly one browser action.
+            kwargs["tool_choice"] = {"type": "auto", "disable_parallel_tool_use": True}
         return self._send(self.client.beta.messages.create, kwargs)

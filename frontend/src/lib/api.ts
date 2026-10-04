@@ -239,6 +239,92 @@ export interface ExportFile {
   modified: number;
 }
 
+export type ResultKind = "pass" | "fail" | "blocked" | "error";
+
+export interface StepResult {
+  order: number;
+  action: string;
+  target: string;
+  input: string;
+  observation: string;
+  result: ResultKind;
+  url: string;
+  screenshot_before: string;
+  screenshot_after: string;
+  duration_ms: number;
+  blocked_reason: string;
+}
+
+export interface Execution {
+  test_case_id: string;
+  attempt: number;
+  result: ResultKind;
+  reason: string;
+  expected: string;
+  actual: string;
+  confidence: number;
+  method: "agent" | "replay" | "replay_healed" | "rule";
+  role: string;
+  viewport: string;
+  started_at: string;
+  finished_at: string | null;
+  steps: StepResult[];
+  failure_step: number | null;
+  auto_findings: { check: string; severity: Severity; title: string; detail: string; url: string; step: number | null }[];
+  video: string;
+  console_log: string;
+  network_log: string;
+  token_usage: { cost_usd: number; requests: number };
+}
+
+export interface TestRunResult {
+  test_case_id: string;
+  title: string;
+  module: string;
+  technique: string;
+  priority: "P1" | "P2" | "P3" | "P4";
+  role: string;
+  result: ResultKind;
+  reproducibility: string;
+  flaky: boolean;
+  reason: string;
+  method: string;
+  duration_ms: number;
+  cost_usd: number;
+  bug_ids: string[];
+}
+
+export type BugStatus = "new" | "needs_review" | "confirmed" | "rejected" | "fixed";
+
+export interface Bug {
+  id: string;
+  title: string;
+  summary: string;
+  module: string;
+  severity: Severity;
+  severity_reason: string;
+  priority: "P1" | "P2" | "P3" | "P4";
+  confidence: number;
+  environment: { browser: string; os: string; viewport: string; url: string; role: string; date_time: string };
+  preconditions: string[];
+  steps_to_reproduce: string[];
+  expected: string;
+  actual: string;
+  evidence: string[];
+  reproducibility: string;
+  links: Record<string, string[]>;
+  status: BugStatus;
+  category: string;
+  test_case_ids: string[];
+  screenshot: string;
+  annotated_screenshot: string;
+  clip: string;
+  video: string;
+  console: string[];
+  network: string[];
+  source: "test" | "automatic_check";
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -318,6 +404,18 @@ export const api = {
   exports: (slug: string, id: string) => request<ExportFile[]>(`/api/projects/${slug}/runs/${id}/exports`),
   createExport: (slug: string, id: string, kind: "requirements" | "testcases_xlsx" | "gherkin_zip") =>
     request<{ files: string[] }>(`/api/projects/${slug}/runs/${id}/exports/${kind}`, { method: "POST" }),
+  execute: (slug: string, id: string, caseIds?: string[]) =>
+    request<{ status: string; cases: number; agent_cases: number; ai: boolean; mode: string }>(
+      `/api/projects/${slug}/runs/${id}/execute`, { method: "POST", body: JSON.stringify({ case_ids: caseIds ?? null }) }),
+  results: (slug: string, id: string) =>
+    request<{ results: TestRunResult[]; mode: string; started_at: string; finished_at: string | null }>(`/api/projects/${slug}/runs/${id}/results`),
+  executions: (slug: string, id: string, caseId: string) =>
+    request<{ test_case_id: string; attempts: Execution[] }>(`/api/projects/${slug}/runs/${id}/executions/${caseId}`),
+  bugs: (slug: string, id: string) => request<{ bugs: Bug[] }>(`/api/projects/${slug}/runs/${id}/bugs`),
+  updateBug: (slug: string, id: string, bugId: string, body: Partial<Pick<Bug, "status" | "severity" | "priority">>) =>
+    request<Bug>(`/api/projects/${slug}/runs/${id}/bugs/${bugId}`, { method: "PATCH", body: JSON.stringify(body) }),
+  replayBug: (slug: string, id: string, bugId: string) =>
+    request<{ message: string }>(`/api/projects/${slug}/runs/${id}/bugs/${bugId}/replay`, { method: "POST" }),
   startDemo: () => request<{ project: string; run: string }>("/api/demo/start", { method: "POST" }),
 };
 

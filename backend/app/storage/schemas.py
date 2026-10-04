@@ -184,7 +184,8 @@ class Element(Model):
         if self.href and self.tag == "a":
             extra.append(f"href={self.href}")
         if self.options:
-            extra.append("options=" + "|".join(self.options[:8]))
+            more = f" (+{len(self.options) - 25} more)" if len(self.options) > 25 else ""
+            extra.append("options=" + "|".join(o[:40] for o in self.options[:25]) + more)
         suffix = f" ({', '.join(extra)})" if extra else ""
         return f'[{self.index}] {kind} "{label[:80]}"{suffix}'
 
@@ -486,14 +487,29 @@ ResultKind = Literal["pass", "fail", "blocked", "error"]
 
 class StepResult(Model):
     order: int
-    action: str
-    target: str = ""
+    action: str  # tool name: click, type, select, navigate, assert, finish, ... or a rule-runner check
+    target: str = ""  # human description of the element, e.g. `button "Save patient"`
     input: str = ""
-    observation: str = ""
+    observation: str = ""  # what the agent / runner saw, or the assertion evidence
     result: ResultKind = "pass"
+    url: str = ""
     screenshot_before: str = ""
     screenshot_after: str = ""
     duration_ms: int = 0
+    locators: LocatorSet | None = None  # for replay scripts and self-healing
+    rect: dict[str, float] | None = None  # element box in the after-screenshot, for annotation
+    blocked_reason: str = ""
+
+
+class AutoFinding(Model):
+    """Something the automatic checks noticed while a test ran (JS error, failed request, error page…)."""
+
+    check: str
+    severity: Severity = "minor"
+    title: str
+    detail: str = ""
+    url: str = ""
+    step: int | None = None
 
 
 class Execution(Document):
@@ -501,15 +517,73 @@ class Execution(Document):
     attempt: int = 1
     result: ResultKind
     reason: str = ""
+    expected: str = ""
+    actual: str = ""
+    confidence: float = 0.8
+    method: Literal["agent", "replay", "replay_healed", "rule"] = "agent"
     role: str = ""
     viewport: str = "desktop"
     started_at: datetime = Field(default_factory=utcnow)
     finished_at: datetime | None = None
     steps: list[StepResult] = Field(default_factory=list)
+    failure_step: int | None = None
+    auto_findings: list[AutoFinding] = Field(default_factory=list)
     video: str = ""
     console_log: str = ""
     network_log: str = ""
     token_usage: TokenUsage = Field(default_factory=TokenUsage)
+
+
+class ExecutionsDoc(Document):
+    """executions/<TC-ID>.json — every attempt of one test case (first run + re-runs)."""
+
+    test_case_id: str
+    attempts: list[Execution] = Field(default_factory=list)
+
+
+class ReplayStep(Model):
+    action: str
+    locators: LocatorSet | None = None
+    input: str = ""
+    url: str = ""
+    target: str = ""
+
+
+class ReplayScript(Document):
+    """replay/<TC-ID>.json — the actions of a recorded agent run, replayable without AI."""
+
+    test_case_id: str
+    role: str = ""
+    steps: list[ReplayStep] = Field(default_factory=list)
+    checks: list[str] = Field(default_factory=list)  # what the agent asserted, re-judged after a replay
+    recorded_result: ResultKind = "pass"
+
+
+class TestRunResult(Model):
+    """One line per test case in results.json (attempts are in executions/<TC-ID>.json)."""
+
+    __test__ = False
+    test_case_id: str
+    title: str = ""
+    module: str = ""
+    technique: str = ""
+    priority: Priority = "P3"
+    role: str = ""
+    result: ResultKind
+    reproducibility: str = ""  # "3/3" for confirmed failures, "1/3" flaky
+    flaky: bool = False
+    reason: str = ""
+    method: str = ""
+    duration_ms: int = 0
+    cost_usd: float = 0.0
+    bug_ids: list[str] = Field(default_factory=list)
+
+
+class ResultsDoc(Document):
+    started_at: datetime = Field(default_factory=utcnow)
+    finished_at: datetime | None = None
+    mode: RunMode = "safe"
+    results: list[TestRunResult] = Field(default_factory=list)
 
 
 class BugEnvironment(Model):
@@ -541,6 +615,15 @@ class Bug(Model):
     status: Literal["new", "needs_review", "confirmed", "rejected", "fixed"] = "new"
     category: str = ""
     symptom_key: str = ""
+    test_case_ids: list[str] = Field(default_factory=list)
+    screenshot: str = ""
+    annotated_screenshot: str = ""
+    clip: str = ""
+    video: str = ""
+    console: list[str] = Field(default_factory=list)
+    network: list[str] = Field(default_factory=list)
+    source: Literal["test", "automatic_check"] = "test"
+    created_at: datetime = Field(default_factory=utcnow)
 
 
 class BugsDoc(Document):

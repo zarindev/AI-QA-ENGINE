@@ -13,6 +13,8 @@ export interface RunEvent {
   role?: string;
   at: string;
   error?: string;
+  result?: "pass" | "fail" | "blocked" | "error";
+  test_id?: string;
 }
 
 /** Subscribe to a run's server-sent events. History arrives first, then live events until the run ends. */

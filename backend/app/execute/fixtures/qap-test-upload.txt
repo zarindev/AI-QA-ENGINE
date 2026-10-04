@@ -1,0 +1,2 @@
+QA Pilot test upload file.
+Harmless plain text used by automated tests (QAP_).

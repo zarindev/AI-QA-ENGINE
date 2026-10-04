@@ -10,7 +10,7 @@ an update here, and a commit (`feat(phase-N): ...`).
 | 1. Foundation + Explore | Scaffold, config, file storage layer + tests, Claude client, Chrome driver + CDP logs, DOM snapshot, locators, login (credentials / manual session), crawler (public + per role + SPA click discovery), automatic checks, run state, CLI, basic HTML report | **Done** |
 | 2. Understand + Site Model | Classifier, Domain Packs, model builder (NetworkX), FastAPI + React shell, SSE, job executor, onboarding, Site Profile + Site Model screens, setup/start scripts, committed static build, **3 demo apps** | **Done** |
 | 3. Requirements + Test Design | Stories, workflows, rules + confirm flow, generator, test data, review UI, requirements PDF, Excel test cases, Gherkin | **Done** |
-| 4. Execute + Verify | Agent loop, actions, recorder, replayer, self-healing, judge, re-runs, severity, dedupe, clips, annotated screenshots, Live Run Viewer, Results + Bugs | Next |
+| 4. Execute + Verify | Agent loop, actions, recorder, replayer, self-healing, judge, re-runs, severity, dedupe, clips, annotated screenshots, Live Run Viewer, Results + Bugs | **Built** — full demo runs paused (API credits ran out) |
 | 5. Advanced checks | Permission matrix, data integrity, business rules, multi-viewport, axe, quality score, heatmap, regression, Bug Replay, privacy blur | — |
 | 6. Reporting | All exports (Excel, PDFs, CSV, Gherkin, pytest suite, traceability) | — |
 | 7. Public repo polish | README, CONTRIBUTING, SECURITY, TROUBLESHOOTING, CI, templates, fresh-clone test, pre-commit secret check | — |
@@ -139,8 +139,47 @@ them first. Estimated cost to *execute* all approved cases: $4–6 per app (Phas
 
 **Tests:** 91 Python tests (incl. review API flow, Excel/Gherkin/PDF exports), 4 Vitest tests.
 
+## Phase 4 — Execute + Verify (built; full runs to finish)
+
+**Built**
+- **Browser agent** (`app/execute/agent.py`): observe → decide → act, one strict tool call per Claude turn (click, type,
+  select, check, upload, navigate, scroll, wait_for, read, assert, finish). Each turn is self-contained (test case in a
+  cached block + compact history + indexed element list + screenshot); a required working-memory `note` on every
+  tool call keeps the plan across turns; loop detection nudges the agent. Limits: steps, time, uncached tokens, cost.
+- **Actions** (`actions.py`): every action passes the Safe Mode guard (submit buttons judged by their form); Full Mode
+  auto-accepts `confirm()` so delete/complete flows can be tested.
+- **Rule runner** (`rule_runner.py`, no AI): smoke, direct-URL permission checks, responsive overflow at 768/390 px,
+  axe-core accessibility (bundled `axe.min.js`).
+- **Recording**: JPEG step screenshots, console + network logs, automatic findings during tests, captioned MP4 per
+  test (bundled ffmpeg). **Replay scripts** with multi-strategy locators; replay + one judgement call re-verifies
+  failures; a broken locator hands over to the agent (self-healing).
+- **Verify** (`app/verify/bugs.py`): re-runs (default 2×) → reproducibility, flaky → "Needs review"; Claude writes each
+  agent bug report (title, numbered steps with data, expected / actual, severity + reasoning, priority, symptom key);
+  rule failures grouped into templated bugs; exploration findings become bugs; de-duplication by symptom key + one
+  Claude grouping pass; annotated screenshot (box on the evidence element) and 10–25 s bug clip.
+- **Execution** is resumable (finished tests are kept, errors retried) and stops at once when the API key is missing
+  or the account has no credits.
+- **UI**: Run approved tests, Live Run Viewer (live agent screenshots, narration, ✓/✗ ticker), Results (per-test
+  attempts, step timeline with screenshots, video), Bugs (severity board / table, Needs-review queue), Bug detail
+  (all fields, annotated screenshot, clip, video, logs, status, one-click Replay in a visible browser).
+
+**Verified on the demo apps (2026-10-05, before the API credits ran out)**
+
+| App | Tests run | Planted bugs confirmed so far | Other real bugs | False positives |
+|---|---|---|---|---|
+| CarePoint Clinic | 32 of 71 | 9 of 15: CL-01, 02, 03, 04, 09, 10, 11, 12, 13 | empty-filter counter, dashboard count mismatch | 1 (parallel-test data) |
+| DriveNow Rentals | 20 of 60 | 4 of 15: CR-01, 04, 07, 13 | colour contrast | 0 |
+| StockRoom POS | 0 of 63 | — | — | — |
+
+Example: the agent registered a 50 %-coverage patient, booked and completed a visit and reported
+“patient pays $120.00, expected $60.00” (CL-02), reproduced 3/3, critical, with annotated screenshot and clip.
+Agent cost ≈ $0.08–0.15 per test; replay re-runs ≈ $0.03.
+
+**To finish Phase 4:** add API credits, then resume the three runs (`POST …/execute {"resume": true}`) and record the
+final per-app numbers. Benchmarks for the README come from Phase 8 only.
+
 ## How to resume
 
 ```
-Continue QA_PILOT_BUILD_PROMPT.md from Phase 4. Check git log and docs/PROGRESS.md for what's done.
+Continue QA_PILOT_BUILD_PROMPT.md: finish the Phase 4 demo runs (resume), then Phase 5. Check git log and docs/PROGRESS.md for what's done.
 ```

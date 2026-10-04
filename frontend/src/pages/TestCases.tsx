@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -26,7 +26,7 @@ export function TestCases() {
   const { slug = "", runId = "" } = useParams();
   const qc = useQueryClient();
   const suite = useQuery({ queryKey: ["testcases", slug, runId], queryFn: () => api.testcases(slug, runId), retry: false });
-  const run = useQuery({ queryKey: ["run", slug, runId], queryFn: () => api.run(slug, runId), refetchInterval: (q) => (q.state.data?.running ? 2000 : false) });
+  const runQ = useQuery({ queryKey: ["run", slug, runId], queryFn: () => api.run(slug, runId), refetchInterval: (q) => (q.state.data?.running ? 2000 : false) });
   const est = useQuery({ queryKey: ["estimate", slug, runId], queryFn: () => api.estimate(slug, runId), enabled: !!suite.data });
   const exports = useQuery({ queryKey: ["exports", slug, runId], queryFn: () => api.exports(slug, runId) });
   const [q, setQ] = useState("");
@@ -36,7 +36,7 @@ export function TestCases() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState<TestCase | null>(null);
   const [addOpen, setAddOpen] = useState(false);
-  const regenerating = !!run.data?.running;
+  const regenerating = !!runQ.data?.running;
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["testcases", slug, runId] });
@@ -49,9 +49,15 @@ export function TestCases() {
     onSuccess: (r, s) => { toast.success(`${r.updated} test cases ${s === "approved" ? "approved" : s === "skipped" ? "skipped" : "reset"}`); setSelected(new Set()); refresh(); },
     onError: (e: Error) => toast.error(e.message),
   });
+  const navigate = useNavigate();
+  const run = useMutation({
+    mutationFn: () => api.execute(slug, runId),
+    onSuccess: (r) => { toast.success(`Running ${r.cases} tests (${r.agent_cases} with the AI agent)`); navigate(`/projects/${slug}/runs/${runId}`); },
+    onError: (e: Error) => toast.error(e.message),
+  });
   const regen = useMutation({
     mutationFn: () => api.regenerate(slug, runId),
-    onSuccess: () => { toast.info("Regenerating — approved, edited and hand-written cases are kept"); run.refetch(); },
+    onSuccess: () => { toast.info("Regenerating — approved, edited and hand-written cases are kept"); runQ.refetch(); },
     onError: (e: Error) => toast.error(e.message),
   });
   const exp = useMutation({
@@ -107,7 +113,9 @@ export function TestCases() {
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" onClick={() => exp.mutate("testcases_xlsx")} disabled={exp.isPending}><FileSpreadsheet /> Excel</Button>
           <Button variant="secondary" onClick={() => exp.mutate("gherkin_zip")} disabled={exp.isPending || counts.approved === 0}><FileDown /> Gherkin</Button>
-          <Button disabled title="Test execution arrives in Phase 4"><Play /> Run approved tests</Button>
+          <Button onClick={() => run.mutate()} disabled={counts.approved === 0 || regenerating || run.isPending}>
+            {run.isPending ? <Loader2 className="animate-spin" /> : <Play />} Run approved tests
+          </Button>
         </div>
       </div>
       {xlsx && <p className="-mt-3 mb-4 text-xs text-faint">Last Excel export: <a className="text-blue-400 hover:underline" href={fileUrl(slug, runId, xlsx.path)}>{xlsx.path}</a></p>}

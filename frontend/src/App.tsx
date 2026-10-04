@@ -12,6 +12,8 @@ import { SiteModel } from "@/pages/SiteModel";
 import { SettingsPage } from "@/pages/Settings";
 import { Requirements } from "@/pages/Requirements";
 import { TestCases } from "@/pages/TestCases";
+import { Results } from "@/pages/Results";
+import { Bugs, BugDetail } from "@/pages/Bugs";
 import { EmptyState } from "@/components/ui/states";
 import { Compass } from "lucide-react";
 
@@ -37,6 +39,9 @@ export default function App() {
           <Route path="projects/:slug/runs/:runId/model" element={<SiteModel />} />
           <Route path="projects/:slug/runs/:runId/requirements" element={<Requirements />} />
           <Route path="projects/:slug/runs/:runId/tests" element={<TestCases />} />
+          <Route path="projects/:slug/runs/:runId/results" element={<Results />} />
+          <Route path="projects/:slug/runs/:runId/bugs" element={<Bugs />} />
+          <Route path="projects/:slug/runs/:runId/bugs/:bugId" element={<BugDetail />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<EmptyState icon={Compass} title="Page not found" description="That screen does not exist." />} />
         </Route>

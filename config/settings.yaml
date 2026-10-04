@@ -118,3 +118,12 @@ privacy:
 server:
   host: 127.0.0.1
   port: 8000
+
+execute:
+  max_steps: 35           # agent turns per test
+  max_seconds: 600        # wall-clock limit per test
+  max_tokens: 160000      # uncached token limit per test (cache reads excluded)
+  max_cost_usd: 0.8       # Claude cost limit per test
+  agent_effort: low       # Claude effort for the browser agent (low is fast and cheap)
+  reruns: 2               # re-run failures this many times to measure reproducibility
+  workers: 2              # tests running in parallel (one Chrome each)

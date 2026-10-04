@@ -130,7 +130,7 @@ for (const el of document.querySelectorAll(INTERACTIVE)) {
     max: el.getAttribute('max') || '',
     minlength: el.minLength > 0 ? el.minLength : null,
     maxlength: el.maxLength > 0 && el.maxLength < 524288 ? el.maxLength : null,
-    options: el.tagName === 'SELECT' ? Array.from(el.options).slice(0, 50).map(o => clean(o.text)) : [],
+    options: el.tagName === 'SELECT' ? Array.from(el.options).slice(0, 200).map(o => clean(o.text)) : [],
     form_index: form ? forms.indexOf(form) : null,
     in_viewport: r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth,
     attributes: attrs,

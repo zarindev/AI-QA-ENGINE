@@ -8,7 +8,7 @@ an update here, and a commit (`feat(phase-N): ...`).
 | Phase | Scope | Status |
 |---|---|---|
 | 1. Foundation + Explore | Scaffold, config, file storage layer + tests, Claude client, Chrome driver + CDP logs, DOM snapshot, locators, login (credentials / manual session), crawler (public + per role + SPA click discovery), automatic checks, run state, CLI, basic HTML report | **Done** |
-| 2. Understand + Site Model | Classifier, Domain Packs, model builder (NetworkX), FastAPI + React shell, SSE, job executor, onboarding, Site Profile + Site Model screens, setup/start scripts, committed static build, **3 demo apps** | **Done** (AI path awaiting a key) |
+| 2. Understand + Site Model | Classifier, Domain Packs, model builder (NetworkX), FastAPI + React shell, SSE, job executor, onboarding, Site Profile + Site Model screens, setup/start scripts, committed static build, **3 demo apps** | **Done** |
 | 3. Requirements + Test Design | Stories, workflows, rules + confirm flow, generator, test data, review UI, requirements PDF, Excel test cases, Gherkin | Next |
 | 4. Execute + Verify | Agent loop, actions, recorder, replayer, self-healing, judge, re-runs, severity, dedupe, clips, annotated screenshots, Live Run Viewer, Results + Bugs | — |
 | 5. Advanced checks | Permission matrix, data integrity, business rules, multi-viewport, axe, quality score, heatmap, regression, Bug Replay, privacy blur | — |
@@ -90,7 +90,16 @@ in this session. Unit tests cover the request shape, caching, budget and refusal
 - 78 Python tests (incl. an end-to-end API run in real Chrome and SSE), 4 Vitest tests; ruff, black, mypy, tsc,
   eslint clean.
 
-**Not verified:** the Claude classifier (no API key in this session) — see KNOWN_ISSUES.
+**Claude classifier, verified on 2026-10-05** (`claude-sonnet-5-5`, real API):
+
+| Demo app | Claude | Offline heuristic |
+|---|---|---|
+| CarePoint Clinic | healthcare · clinic management, 0.97 | healthcare, 0.75 |
+| DriveNow Rentals | rental · car rental back office, 0.97 | rental, 0.73 |
+| StockRoom POS | ecommerce · retail point of sale, 0.88 | ecommerce, 0.75 |
+
+Claude also found entities the heuristic missed (Customer, Sale line item), required fields and the insurance
+billing rule. Cost for the three classifications: $0.13 (about 4 cents per site).
 
 ## How to resume
 

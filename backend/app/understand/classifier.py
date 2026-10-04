@@ -101,6 +101,22 @@ class AIClassification(BaseModel):
     evidence: list[AIEvidence]
 
 
+def normalize_relations(relations: list[str], entity_names: list[str], own: str) -> list[str]:
+    """Claude may write relations as prose ("has many Appointments", "Booking belongs to Car"); the graph needs
+    the names of the other entities. Longest names first, so "Sale line item" wins over "Sale"."""
+    found: list[str] = []
+    for text in relations:
+        rest = text.lower()
+        for name in sorted(entity_names, key=len, reverse=True):
+            rx = re.compile(rf"\b{re.escape(name.lower())}(e?s)?\b")
+            if not rx.search(rest):
+                continue
+            if name != own and name not in found:
+                found.append(name)
+            rest = rx.sub(" ", rest)
+    return found
+
+
 def _system_prompt() -> str:
     return (PROMPTS_DIR / "understand.md").read_text(encoding="utf-8")
 
@@ -167,16 +183,24 @@ def classify_with_ai(ai: Any, crawl: CrawlResult, run_dir: Path) -> SiteProfile:
         effort="medium",
     )
     crawled_roles = {r.role for r in crawl.roles}
+    # "public" is QA Pilot's name for "not logged in", not a user type of the app.
+    ai_roles = [
+        r
+        for r in result.roles
+        if r.name.strip().lower() not in ("public", "anonymous", "guest", "visitor")
+        or "public" not in crawled_roles
+    ]
+    entity_names = [e.name for e in result.entities]
     profile = SiteProfile(
         domain=result.domain,
         sub_type=result.sub_type,
         confidence=max(0.0, min(1.0, result.confidence)),
         summary=result.summary,
         method="ai",
-        roles=[r.name for r in result.roles],
+        roles=[r.name for r in ai_roles],
         role_details=[
             RoleProfile(name=r.name, description=r.description, observed=r.name in crawled_roles)
-            for r in result.roles
+            for r in ai_roles
         ],
         modules=result.modules,
         features=[
@@ -194,7 +218,7 @@ def classify_with_ai(ai: Any, crawl: CrawlResult, run_dir: Path) -> SiteProfile:
             Entity(
                 name=e.name,
                 fields=[EntityField(**fld.model_dump()) for fld in e.fields],
-                relations=e.relations,
+                relations=normalize_relations(e.relations, entity_names, e.name),
                 pages=e.pages,
                 operations=e.operations,
             )

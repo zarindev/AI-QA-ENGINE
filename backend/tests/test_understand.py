@@ -189,3 +189,15 @@ def test_ai_schema_is_strict_json_friendly():
     schema = AIClassification.model_json_schema()
     assert set(schema["required"]) >= {"domain", "confidence", "entities", "evidence"}
     assert "other" in schema["properties"]["domain"]["enum"]
+
+
+def test_relations_from_prose_become_entity_names():
+    from app.understand.classifier import normalize_relations
+
+    names = ["Sale", "Sale line item", "Product", "Booking", "Car"]
+    assert normalize_relations(["Sale line item", "has many Products"], names, "Sale") == [
+        "Sale line item",
+        "Product",
+    ]
+    assert normalize_relations(["Booking belongs to Car"], names, "Booking") == ["Car"]
+    assert normalize_relations(["has one Invoice"], names, "Car") == []

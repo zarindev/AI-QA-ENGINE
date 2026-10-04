@@ -9,7 +9,9 @@ Work out what the application is and how it works, so that test cases can be des
 - confidence: 0–1, how sure you are of the domain. Be honest — a generic admin template with little content
   deserves a low score.
 - summary: two or three plain-language sentences a business owner would understand.
-- roles: the user roles that exist (include ones you only infer, but describe each by what it can do).
+- roles: the user roles that exist (include ones you only infer, but describe each by what it can do). The
+  crawl role "public" only means "not logged in" — do not list it as a role.
+- relations: name the related entity exactly as you named it in `entities` (e.g. "Patient"), one per item.
 - modules: the main sections of the app as a user sees them in the navigation.
 - features: concrete capabilities ("Book appointment", "Record payment"), each tied to a module, the roles that
   have it and the URL templates where it lives.

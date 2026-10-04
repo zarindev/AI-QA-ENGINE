@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block title %}Availability{% endblock %}
+{% block heading %}Availability — next 14 days{% endblock %}
+{% block head %}<style>
+.cal { border-collapse: collapse; background: #fff; }
+.cal td, .cal th { border: 1px solid #e5e7eb; width: 64px; min-width: 64px; height: 34px; text-align: center; font-size: 12px; }
+.cal th.car { width: 180px; min-width: 180px; text-align: left; padding: 0 8px; }
+.free { background: #dcfce7; } .busy { background: #fecaca; } .maintenance { background: #e5e7eb; }
+</style>{% endblock %}
+{% block content %}
+<p class="muted"><span class="badge ok">free</span> <span class="badge bad">booked</span> <span class="badge">maintenance</span> <span id="legend-count"></span></p>
+{# PLANTED CR-14: the 15-column grid has fixed widths and no scroll container, so it overflows small screens #}
+<table class="cal" id="availability">
+<tr><th class="car">Car</th>{% for d in days %}<th>{{ d.strftime('%a %d') }}</th>{% endfor %}</tr>
+{% for c in cars %}<tr><th class="car"><a href="{{ url_for('car_detail', cid=c.id) }}">{{ c.make }} {{ c.model }}</a></th>
+{% for s in grid[c.id] %}<td class="{{ s }}" title="{{ s }}"></td>{% endfor %}</tr>{% endfor %}
+</table>
+{% endblock %}
+{% block scripts %}
+<script>
+  const free = document.querySelectorAll('#availability td.free').length;
+  document.getElementById('legend-count').textContent = free + ' free car-days';
+  // PLANTED CR-11: calls a helper that was never defined -> Uncaught ReferenceError
+  highlightToday(document.getElementById('availability'));
+</script>
+{% endblock %}

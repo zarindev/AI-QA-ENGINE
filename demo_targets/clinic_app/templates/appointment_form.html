@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Book appointment{% endblock %}
+{% block heading %}Book appointment{% endblock %}
+{% block content %}
+<div class="card">
+{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form">
+  <label for="patient_id">Patient</label>
+  <select id="patient_id" name="patient_id" required><option value="">Select patient…</option>
+  {% for p in patients %}<option value="{{ p.id }}" {{ 'selected' if data.patient_id == p.id|string }}>{{ p.name }}</option>{% endfor %}</select>
+  <label for="doctor_id">Doctor</label>
+  <select id="doctor_id" name="doctor_id" required><option value="">Select doctor…</option>
+  {% for d in doctors %}<option value="{{ d.id }}" {{ 'selected' if data.doctor_id == d.id|string }}>{{ d.name }} — {{ d.specialty }}</option>{% endfor %}</select>
+  <div class="row">
+    <div><label for="date">Date</label><input id="date" name="date" type="date" value="{{ data.date }}" required></div>
+    <div><label for="time">Time</label><input id="time" name="time" type="time" step="900" value="{{ data.time }}" required></div>
+  </div>
+  <label for="reason">Reason for visit</label><input id="reason" name="reason" value="{{ data.reason }}">
+  <button class="btn primary" type="submit">Book appointment</button>
+</form></div>
+{% endblock %}

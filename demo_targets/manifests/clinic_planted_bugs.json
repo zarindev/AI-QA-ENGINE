@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "app": "clinic_app",
+  "name": "CarePoint Clinic",
+  "url": "http://localhost:8101",
+  "domain": "healthcare",
+  "roles": {
+    "admin": [
+      "admin@carepoint.test",
+      "Admin#2026"
+    ],
+    "doctor": [
+      "dr.lee@carepoint.test",
+      "Doctor#2026"
+    ],
+    "receptionist": [
+      "reception@carepoint.test",
+      "Front#2026"
+    ]
+  },
+  "note": "Answer key for scripts/benchmark.py only. The QA Pilot engine must never read this file.",
+  "bugs": [
+    {
+      "id": "CL-01",
+      "category": "business_rule",
+      "title": "Doctor can be double-booked",
+      "description": "Booking a second appointment for the same doctor at the same date and time is accepted.",
+      "location": "POST /appointments/new",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CL-02",
+      "category": "calculation",
+      "title": "Invoice ignores insurance coverage",
+      "description": "Completing a visit creates an invoice whose 'Patient pays' equals the full fee instead of fee \u00d7 (1 \u2212 coverage%).",
+      "location": "POST /appointments/<id>/complete \u2192 invoice",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "CL-03",
+      "category": "permission",
+      "title": "Non-admins can open the financial reports page",
+      "description": "Reports is only in the admin menu, but doctors and receptionists can open /reports by URL.",
+      "location": "GET /reports",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "CL-04",
+      "category": "permission",
+      "title": "Any role can add a doctor via direct URL",
+      "description": "The 'Add doctor' form is hidden for non-admins but /doctors/new works for every logged-in role.",
+      "location": "GET/POST /doctors/new",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CL-05",
+      "category": "validation",
+      "title": "Phone number accepts letters",
+      "description": "Patient phone is not validated; values like 'call me maybe' are saved.",
+      "location": "POST /patients/new",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CL-06",
+      "category": "validation",
+      "title": "Date of birth in the future is accepted",
+      "description": "Registering a patient born next year succeeds.",
+      "location": "POST /patients/new",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CL-07",
+      "category": "data_integrity",
+      "title": "Completed visits count never updates",
+      "description": "Patient profile 'Completed visits' stays at the stored value after completing an appointment.",
+      "location": "GET /patients/<id>",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CL-08",
+      "category": "data_integrity",
+      "title": "Deactivated doctor still bookable",
+      "description": "Dr. Helen Brooks is inactive but appears in the booking dropdown and can be booked.",
+      "location": "GET /appointments/new",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CL-09",
+      "category": "state_transition",
+      "title": "Cancelled appointment can be completed",
+      "description": "The 'Complete visit' action is available and works for cancelled appointments, creating an invoice.",
+      "location": "POST /appointments/<id>/complete",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CL-10",
+      "category": "broken_link",
+      "title": "Privacy policy link is broken",
+      "description": "Footer 'Privacy policy' link returns 404 on every page.",
+      "location": "/privacy-policy",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CL-11",
+      "category": "js_error",
+      "title": "JavaScript error on Appointments page",
+      "description": "Uncaught TypeError: Cannot set properties of null (setting 'textContent').",
+      "location": "GET /appointments",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CL-12",
+      "category": "ui_responsive",
+      "title": "Patients table overflows on mobile",
+      "description": "The patients table has a fixed 1080px minimum width without a scroll container; at 390px the page scrolls horizontally.",
+      "location": "GET /patients @390px",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CL-13",
+      "category": "accessibility",
+      "title": "Missing labels and alt text",
+      "description": "Patient search input has no label, doctor avatars have no alt text, the edit button (\u270e) has no accessible name.",
+      "location": "GET /patients, /doctors",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CL-14",
+      "category": "calculation",
+      "title": "Revenue collected includes unpaid invoices",
+      "description": "'Revenue collected (paid invoices)' sums all invoices, including unpaid ones.",
+      "location": "GET /reports",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CL-15",
+      "category": "validation",
+      "title": "Prescription duration accepts zero or negative days",
+      "description": "A prescription for -5 days is saved.",
+      "location": "POST /appointments/<id>/prescribe",
+      "expected_severity": "minor"
+    }
+  ]
+}

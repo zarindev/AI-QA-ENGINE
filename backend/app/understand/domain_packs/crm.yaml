@@ -1,0 +1,48 @@
+# Domain Pack: CRM / sales pipeline. Optional hints; QA Pilot works without a matching pack.
+name: crm
+label: CRM / sales pipeline
+sub_types:
+- sales CRM
+- support desk
+- marketing automation
+keywords:
+  lead: 3
+  deal: 3
+  pipeline: 3
+  contact: 2
+  opportunity: 3
+  account: 1
+  ticket: 2
+  campaign: 2
+  prospect: 2
+  quote: 1
+typical_roles:
+- admin
+- sales manager
+- sales rep
+- support agent
+typical_entities:
+- Lead
+- Contact
+- Account
+- Deal
+- Activity
+- Ticket
+typical_features:
+- Lead capture
+- Pipeline
+- Contact management
+- Activities
+- Reports
+critical_rules:
+- Deal stages move in order
+- Deal value is non-negative
+- Reps see only their own leads unless managers
+edge_cases:
+- Duplicate contacts
+- Closed-lost reopened
+priority_hints:
+  P1:
+  - permission
+  - revenue
+privacy_blur: false

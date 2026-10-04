@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+<div class="cards">
+  <div class="card stat"><div class="num">{{ stats.patients }}</div><div class="lbl">Patients</div></div>
+  <div class="card stat"><div class="num">{{ stats.upcoming }}</div><div class="lbl">Upcoming appointments</div></div>
+  <div class="card stat"><div class="num">{{ stats.unpaid }}</div><div class="lbl">Unpaid invoices</div></div>
+  <div class="card stat"><div class="num">{{ stats.doctors }}</div><div class="lbl">Active doctors</div></div>
+</div>
+<div class="card">
+  <h2>Upcoming appointments</h2>
+  {% if upcoming %}
+  <table class="table"><tr><th>Date</th><th>Time</th><th>Patient</th><th>Doctor</th><th>Status</th></tr>
+  {% for a in upcoming %}
+  <tr><td><a href="{{ url_for('appointment_detail', aid=a.id) }}">{{ a.date }}</a></td><td>{{ a.time }}</td>
+      <td>{{ patients.get(a.patient_id, '—') }}</td><td>{{ doctors.get(a.doctor_id, '—') }}</td>
+      <td><span class="badge info">{{ a.status|replace('_', ' ') }}</span></td></tr>
+  {% endfor %}</table>
+  {% else %}<p class="muted">No upcoming appointments.</p>{% endif %}
+</div>
+{% endblock %}

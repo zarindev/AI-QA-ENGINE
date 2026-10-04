@@ -1,0 +1,53 @@
+# Domain Pack: Education / school management. Optional hints; QA Pilot works without a matching pack.
+name: education
+label: Education / school management
+sub_types:
+- school management
+- LMS
+- university portal
+- tutoring
+keywords:
+  student: 3
+  teacher: 3
+  course: 3
+  class: 1
+  grade: 3
+  enrollment: 3
+  attendance: 3
+  exam: 2
+  semester: 2
+  assignment: 2
+  lesson: 2
+  curriculum: 2
+typical_roles:
+- admin
+- teacher
+- student
+- parent
+typical_entities:
+- Student
+- Teacher
+- Course
+- Enrollment
+- Grade
+- Attendance
+typical_features:
+- Enrollment
+- Timetable
+- Attendance
+- Grading
+- Report cards
+critical_rules:
+- Grades within the allowed scale
+- A student cannot enroll twice in the same course
+- Class capacity is respected
+- Students see only their own grades
+edge_cases:
+- Full class
+- Grade boundaries
+- Withdrawn student
+priority_hints:
+  P1:
+  - grades
+  - permission
+privacy_blur: false

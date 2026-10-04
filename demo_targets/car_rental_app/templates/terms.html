@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Rental terms{% endblock %}
+{% block heading %}Rental terms{% endblock %}
+{% block content %}<div class="card"><ul>
+<li>Rental days = return date − pickup date, with a minimum charge of 1 day.</li>
+<li>The return date must be on or after the pickup date.</li>
+<li>Rentals of 7 days or more receive a {{ discount }}% weekly discount.</li>
+<li>A car cannot be booked twice for overlapping dates, and cars in maintenance cannot be booked.</li>
+<li>Bookings go reserved → picked up → returned. Only reserved bookings can be cancelled.</li>
+<li>Returned cars become available again immediately.</li>
+<li>Customers can only see their own bookings and invoices. The revenue report is for administrators.</li>
+</ul></div>{% endblock %}

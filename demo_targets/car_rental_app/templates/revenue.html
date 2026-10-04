@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Revenue{% endblock %}
+{% block heading %}Revenue report{% endblock %}
+{% block content %}
+<div class="cards"><div class="card stat"><div class="num">{{ paid|money }}</div><div class="lbl">Collected</div></div>
+<div class="card stat"><div class="num">{{ unpaid|money }}</div><div class="lbl">Outstanding</div></div></div>
+<div class="card"><h2>Collected revenue per car</h2><table class="table"><tr><th>Car</th><th>Revenue</th></tr>
+{% for car, total in by_car.items() %}<tr><td>{{ car }}</td><td>{{ total|money }}</td></tr>{% else %}<tr><td colspan="2" class="muted">No paid invoices.</td></tr>{% endfor %}</table></div>
+{% endblock %}

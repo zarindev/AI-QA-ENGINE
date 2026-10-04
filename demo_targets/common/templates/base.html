@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ brand }}{% endblock %} · {{ brand }}</title>
+<link rel="stylesheet" href="/assets/kit.css">
+<style>:root { --accent: {{ accent }}; }</style>
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/">{{ brand }}</a>
+    <div class="tagline">{{ tagline }}</div>
+    {% if current_user %}
+    <nav>
+      {% for label, endpoint in nav_items %}
+      <a href="{{ url_for(endpoint) }}" class="{{ 'active' if request.endpoint == endpoint else '' }}">{{ label }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <h1>{% block heading %}{% endblock %}</h1>
+      {% if current_user %}
+      <div class="who"><span>{{ current_user.name }}</span> <span class="role">{{ current_user.role|capitalize }}</span>
+        <a href="{{ url_for('logout') }}">Log out</a></div>
+      {% endif %}
+    </header>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="flash {{ cat }}" role="status">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    <main class="content">{% block content %}{% endblock %}</main>
+    <footer class="footer">{% block footer %}{% endblock %}
+      <form method="post" action="/reset-demo-data" class="inline"><button class="link-btn" type="submit">Reset demo data</button></form>
+    </footer>
+  </div>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

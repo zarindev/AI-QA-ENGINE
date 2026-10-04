@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Reports{% endblock %}
+{% block heading %}Reports{% endblock %}
+{% block content %}
+<div class="cards">
+  <div class="card stat"><div class="num" id="revenue-collected">{{ collected|money }}</div><div class="lbl">Revenue collected (paid invoices)</div></div>
+  <div class="card stat"><div class="num">{{ outstanding|money }}</div><div class="lbl">Outstanding (unpaid)</div></div>
+  <div class="card stat"><div class="num">{{ invoices }}</div><div class="lbl">Invoices issued</div></div>
+</div>
+<div class="card"><h2>Completed visits per doctor</h2>
+<table class="table"><tr><th>Doctor</th><th>Completed visits</th></tr>
+{% for name, n in per_doctor.items() %}<tr><td>{{ name }}</td><td>{{ n }}</td></tr>{% else %}<tr><td colspan="2" class="muted">No completed visits.</td></tr>{% endfor %}</table></div>
+{% endblock %}

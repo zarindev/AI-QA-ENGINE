@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Products{% endblock %}
+{% block heading %}Products{% endblock %}
+{% block content %}
+<div class="actions">
+  {% if current_user.role == 'admin' %}<a class="btn primary" href="{{ url_for('product_new') }}">New product</a>{% endif %}
+  <form method="get" class="inline" role="search"><label for="q">Search products</label>
+  <input id="q" name="q" value="{{ q }}" style="padding:8px;border:1px solid #d1d5db;border-radius:8px"><button class="btn" type="submit">Search</button></form>
+</div>
+{# PLANTED SH-13: a fixed-width table with no scroll wrapper overflows phone screens #}
+<table class="table" style="width:1100px">
+<tr><th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>Cost</th><th>Stock</th><th>Status</th><th></th></tr>
+{% for p in rows %}<tr><td><code>{{ p.sku }}</code></td><td>{{ p.name }}</td><td>{{ p.category }}</td><td>{{ p.price|money }}</td><td>{{ p.cost|money }}</td>
+<td>{{ p.stock }}{% if p.stock < threshold %} <span class="badge warn">low</span>{% endif %}</td>
+<td>{% if p.active %}<span class="badge ok">on sale</span>{% else %}<span class="badge">removed</span>{% endif %}</td>
+<td>{% if current_user.role == 'admin' %}
+  {# PLANTED SH-12: icon-only edit link with no accessible name #}
+  <a class="btn small" href="{{ url_for('product_edit', pid=p.id) }}">✎</a>
+  {% if p.active %}<form method="post" action="{{ url_for('product_deactivate', pid=p.id) }}" class="inline"><button class="btn small" type="submit">Remove from sale</button></form>{% endif %}
+{% endif %}</td></tr>
+{% else %}<tr><td colspan="8" class="muted">No products found.</td></tr>{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+<div class="cards">
+  <div class="card stat"><div class="num">{{ sales_today|length }}</div><div class="lbl">Sales today</div></div>
+  <div class="card stat"><div class="num">{{ revenue_today|money }}</div><div class="lbl">Takings today (incl. VAT)</div></div>
+  <div class="card stat"><div class="num">{{ product_count }}</div><div class="lbl">Products on sale</div></div>
+  <div class="card stat"><div class="num">{{ low|length }}</div><div class="lbl">Low stock (&lt; {{ threshold }})</div></div>
+</div>
+<div class="grid-2">
+<div class="card"><h2>Low stock alerts</h2>
+{% for p in low %}<div><a href="{{ url_for('products') }}?q={{ p.sku }}">{{ p.name }}</a> — {{ p.stock }} left</div>
+{% else %}<p class="muted">All products are above the low-stock threshold of {{ threshold }}.</p>{% endfor %}</div>
+<div class="card"><h2>Today's sales</h2><canvas id="sales-chart" width="400" height="120" aria-label="Sales today chart" role="img"></canvas></div>
+</div>
+<p><a class="btn primary" href="{{ url_for('sale_new') }}">Start a new sale</a></p>
+{% endblock %}
+{% block scripts %}
+<script>
+  const ctx = document.getElementById('sales-chart').getContext('2d');
+  ctx.fillStyle = '#7c3aed';
+  ctx.fillRect(10, 40, 60, 70);
+  // PLANTED SH-11: reads a config object that is never defined -> Uncaught TypeError
+  ctx.fillRect(80, 120 - window.salesConfig.height, 60, window.salesConfig.height);
+</script>
+{% endblock %}

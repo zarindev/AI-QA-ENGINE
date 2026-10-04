@@ -1,0 +1,55 @@
+# Domain Pack: HR / people management. Optional hints; QA Pilot works without a matching pack.
+name: hr
+label: HR / people management
+sub_types:
+- HRIS
+- payroll
+- recruitment
+- leave management
+keywords:
+  employee: 3
+  leave: 2
+  payroll: 3
+  recruitment: 3
+  candidate: 2
+  vacancy: 2
+  timesheet: 3
+  performance: 1
+  department: 1
+  salary: 2
+  attendance: 1
+  pim: 2
+  claim: 1
+typical_roles:
+- admin
+- hr manager
+- manager
+- employee
+typical_entities:
+- Employee
+- Leave request
+- Payslip
+- Candidate
+- Department
+- Timesheet
+typical_features:
+- Employee directory
+- Leave management
+- Recruitment
+- Timesheets
+- Performance reviews
+- Payroll
+critical_rules:
+- Leave cannot exceed entitlement
+- Leave end date on or after start date
+- Employees see only their own payslips
+- Approvals follow the reporting line
+edge_cases:
+- Overlapping leave
+- Negative balance
+- Terminated employee access
+priority_hints:
+  P1:
+  - payroll
+  - permission
+privacy_blur: false

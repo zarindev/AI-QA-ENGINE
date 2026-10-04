@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Bookings{% endblock %}
+{% block heading %}{{ 'My bookings' if current_user.role == 'customer' else 'Bookings' }}{% endblock %}
+{% block content %}
+{% if current_user.role in ('agent','customer') %}<div class="actions"><a class="btn primary" href="{{ url_for('booking_new') }}">New booking</a></div>{% endif %}
+<div class="table-wrap"><table class="table"><tr><th>Booking</th><th>Car</th><th>Customer</th><th>Pickup</th><th>Return</th><th>Estimate</th><th>Status</th></tr>
+{% for b in rows %}<tr><td><a href="{{ url_for('booking_detail', bid=b.id) }}">B-{{ '%04d' % b.id }}</a></td><td>{{ cars.get(b.car_id) }}</td><td>{{ users.get(b.customer_id) }}</td>
+<td>{{ b.pickup_date }}</td><td>{{ b.return_date }}</td><td>{{ b.quote_total|money }}</td><td><span class="badge info">{{ b.status|replace('_',' ') }}</span></td></tr>
+{% else %}<tr><td colspan="7" class="muted">No bookings yet.</td></tr>{% endfor %}</table></div>
+{% endblock %}

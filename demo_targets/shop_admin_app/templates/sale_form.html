@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}New sale{% endblock %}
+{% block heading %}New sale{% endblock %}
+{% block content %}
+<div class="card">{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form" style="max-width:720px">
+{% for i in range(1, lines + 1) %}
+<div class="row" style="grid-template-columns: 3fr 1fr">
+  <div><label for="product_{{ i }}">Item {{ i }}</label>
+  <select id="product_{{ i }}" name="product_{{ i }}"><option value="">—</option>
+  {% for p in options %}<option value="{{ p.id }}">{{ p.name }} ({{ p.price|money }}, {{ p.stock }} in stock)</option>{% endfor %}</select></div>
+  <div><label for="qty_{{ i }}">Qty</label><input id="qty_{{ i }}" name="qty_{{ i }}" type="number" min="1" value="1"></div>
+</div>{% endfor %}
+<label for="payment">Payment method</label>
+<select id="payment" name="payment"><option value="cash">Cash</option><option value="card">Card</option></select>
+<p class="muted">Prices exclude VAT ({{ vat }}%), which is added at checkout.</p>
+<button class="btn primary" type="submit">Complete sale</button></form></div>
+{% endblock %}

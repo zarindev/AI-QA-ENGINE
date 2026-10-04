@@ -1,0 +1,50 @@
+# Domain Pack: Restaurant / food service. Optional hints; QA Pilot works without a matching pack.
+name: restaurant
+label: Restaurant / food service
+sub_types:
+- restaurant POS
+- online ordering
+- reservations
+- kitchen display
+keywords:
+  menu: 3
+  table: 1
+  reservation: 2
+  order: 1
+  kitchen: 3
+  dish: 3
+  waiter: 3
+  delivery: 2
+  tip: 2
+  course: 1
+  chef: 2
+typical_roles:
+- admin
+- manager
+- waiter
+- chef
+- customer
+typical_entities:
+- Menu item
+- Order
+- Table
+- Reservation
+- Bill
+typical_features:
+- Menu management
+- Orders
+- Table reservations
+- Kitchen queue
+- Billing and tips
+critical_rules:
+- A table cannot be double-reserved
+- Bill = items + tax + service
+- Unavailable dishes cannot be ordered
+edge_cases:
+- Split bill
+- Large party
+- Sold-out dish
+priority_hints:
+  P1:
+  - billing
+privacy_blur: false

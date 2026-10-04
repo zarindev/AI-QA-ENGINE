@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Write prescription{% endblock %}
+{% block heading %}Prescription for {{ patient.name if patient else 'patient' }}{% endblock %}
+{% block content %}
+<div class="card">
+{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form">
+  <label for="medication">Medication</label><input id="medication" name="medication" value="{{ data.medication }}" required>
+  <label for="dosage">Dosage</label><input id="dosage" name="dosage" placeholder="e.g. 500 mg twice daily" value="{{ data.dosage }}" required>
+  <label for="days">Duration (days)</label><input id="days" name="days" type="number" value="{{ data.days }}" required>
+  <button class="btn primary" type="submit">Save prescription</button>
+</form></div>
+{% endblock %}

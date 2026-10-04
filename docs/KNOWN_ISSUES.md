@@ -14,3 +14,8 @@ Things QA Pilot cannot verify or does not handle yet, each with the current fall
 | Redaction | Secrets shorter than 4 characters are not redacted from logs/page text. | Use realistic passwords for test roles. |
 | AI | Claude code paths need `ANTHROPIC_API_KEY`; without it, exploration runs on heuristics only. | The CLI says so up front. |
 | Server-side fallbacks | `fallbacks: "default"` may be rejected for some accounts/models. | The client retries once without it, logs a warning and keeps fallbacks off for the run. |
+| Understand (AI) | **The Claude classifier has not yet run against the real API** — no key was available while building Phase 2. The request shape, schema and error handling are unit-tested; the prompt itself is untested. | Without a key the heuristic classifier runs and is labelled as such. Verify with a key before Phase 3 relies on AI profiles. |
+| Understand (heuristic) | Entity extraction is noisy on large generic apps (OrangeHRM yields names like "Username", "Empnumber") and finds nothing on stores whose products are cards rather than tables/forms (saucedemo). Domain detection was correct on 7/7 crawled sites. | Confidence capped at 0.75; returns `other` when fewer than 4 distinct domain keywords are found. |
+| Server port | Port 8000 may already be used by another app. | `start.bat` / `start.sh` pick the next free port (8001, 8002…) and print it. |
+| Frontend install | npm 10 can crash with "Cannot read properties of null (reading 'edgesOut')" while resolving peer dependencies. | `frontend/.npmrc` sets `legacy-peer-deps=true`. Only UI developers need Node.js. |
+| Manual login via UI | The "Capture login" window opens on the machine running QA Pilot (fine for a local app). | Waits up to 15 minutes for "I'm logged in". |

@@ -102,6 +102,8 @@ safety:
     - delete all
     - drop database
     - factory reset
+    - reset demo data
+    - wipe all
   # Forms that are safe to submit in Safe Mode.
   safe_form_hints:
     - search

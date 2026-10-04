@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Sales{% endblock %}
+{% block heading %}Sales{% endblock %}
+{% block content %}
+<div class="table-wrap"><table class="table"><tr><th>Sale</th><th>Date</th><th>Cashier</th><th>Items</th><th>Subtotal</th><th>VAT</th><th>Total</th><th>Status</th></tr>
+{% for s in rows %}<tr><td><a href="{{ url_for('sale_detail', sid=s.id) }}">S-{{ '%05d' % s.id }}</a></td><td>{{ s.date }}</td><td>{{ users.get(s.cashier_id) }}</td>
+<td>{{ s['items']|sum(attribute='qty') }}</td><td>{{ s.subtotal|money }}</td><td>{{ s.vat|money }}</td><td>{{ s.total|money }}</td>
+<td><span class="badge {{ 'ok' if s.status == 'completed' else 'warn' }}">{{ s.status }}</span></td></tr>
+{% else %}<tr><td colspan="8" class="muted">No sales yet.</td></tr>{% endfor %}</table></div>
+{% endblock %}

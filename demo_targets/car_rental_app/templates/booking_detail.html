@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Booking B-{{ '%04d' % b.id }}{% endblock %}
+{% block heading %}Booking B-{{ '%04d' % b.id }}{% endblock %}
+{% block content %}
+<div class="grid-2">
+<div class="card"><h2>Booking</h2><dl class="kv">
+<dt>Customer</dt><dd>{{ customer.name if customer else '—' }}{% if customer %} ({{ customer.email }}){% endif %}</dd>
+<dt>Car</dt><dd>{% if car %}<a href="{{ url_for('car_detail', cid=car.id) }}">{{ car.make }} {{ car.model }}</a> · {{ car.plate }}{% endif %}</dd>
+<dt>Pickup</dt><dd>{{ b.pickup_date }}</dd><dt>Return</dt><dd>{{ b.return_date }}</dd>
+<dt>Status</dt><dd><span class="badge info" id="booking-status">{{ b.status|replace('_',' ') }}</span></dd></dl>
+{% if current_user.role in ('admin','agent') %}<div class="actions" style="margin-top:14px">
+{% if b.status != 'picked_up' %}<form method="post" action="{{ url_for('booking_action', bid=b.id, action='pickup') }}"><button class="btn primary" type="submit">Hand over car</button></form>{% endif %}
+{% if b.status == 'picked_up' %}<form method="post" action="{{ url_for('booking_action', bid=b.id, action='return') }}"><button class="btn primary" type="submit">Return car</button></form>{% endif %}
+{% if b.status == 'reserved' %}<form method="post" action="{{ url_for('booking_action', bid=b.id, action='cancel') }}"><button class="btn" type="submit">Cancel booking</button></form>{% endif %}
+</div>{% endif %}</div>
+<div class="card"><h2>Price</h2><dl class="kv">
+<dt>Daily rate</dt><dd>{{ b.daily_rate|money }}</dd><dt>Rental days</dt><dd id="quote-days">{{ quote.days }}</dd>
+<dt>Subtotal</dt><dd>{{ quote.subtotal|money }}</dd><dt>Weekly discount</dt><dd>−{{ quote.discount|money }}</dd>
+<dt>Total</dt><dd id="quote-total"><strong>{{ quote.total|money }}</strong></dd></dl>
+{% if invoice %}<p>Invoice INV-{{ '%04d' % invoice.id }}: {{ invoice.total|money }} ({{ invoice.status }})</p>{% endif %}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+# Domain Pack: Blog / content site. Optional hints; QA Pilot works without a matching pack.
+name: blog
+label: Blog / content site
+sub_types:
+- blog
+- news site
+- documentation
+- magazine
+keywords:
+  blog: 3
+  post: 2
+  article: 3
+  author: 2
+  comment: 2
+  tag: 1
+  category: 1
+  read more: 2
+  subscribe: 2
+  newsletter: 2
+typical_roles:
+- visitor
+- author
+- editor
+- admin
+typical_entities:
+- Post
+- Author
+- Comment
+- Category
+- Tag
+typical_features:
+- Posts
+- Categories and tags
+- Comments
+- Search
+- Newsletter
+critical_rules:
+- Drafts are not public
+- Comments require moderation if configured
+- Pagination is consistent
+edge_cases:
+- Empty category
+- Very long title
+priority_hints:
+  P1:
+  - publishing permissions
+privacy_blur: false

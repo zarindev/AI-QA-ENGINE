@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block heading %}Sign in{% endblock %}
+{% block content %}
+<div class="login-card card">
+  <h2>Welcome to {{ brand }}</h2>
+  <p class="muted">{{ tagline }}</p>
+  {% if error %}<div class="alert error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" class="form">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" autocomplete="username" required>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <button class="btn primary" type="submit">Sign in</button>
+  </form>
+  <details class="demo-users"><summary>Demo accounts</summary>
+    <table class="table compact"><tr><th>Role</th><th>Email</th><th>Password</th></tr>
+    {% for u in demo_users %}<tr><td>{{ u.role|capitalize }}</td><td>{{ u.email }}</td><td><code>{{ u.password }}</code></td></tr>{% endfor %}
+    </table>
+  </details>
+</div>
+{% endblock %}

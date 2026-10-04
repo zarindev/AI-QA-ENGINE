@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "app": "shop_admin_app",
+  "name": "StockRoom POS",
+  "url": "http://localhost:8103",
+  "domain": "ecommerce",
+  "roles": {
+    "admin": [
+      "admin@stockroom.test",
+      "Admin#2026"
+    ],
+    "cashier": [
+      "cashier@stockroom.test",
+      "Till#2026"
+    ]
+  },
+  "note": "Answer key for scripts/benchmark.py only. The QA Pilot engine must never read this file.",
+  "bugs": [
+    {
+      "id": "SH-01",
+      "category": "business_rule",
+      "title": "Stock can go negative",
+      "description": "A sale with quantity larger than the stock on hand is accepted and stock becomes negative.",
+      "location": "POST /sales/new",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "SH-02",
+      "category": "data_integrity",
+      "title": "Removed product still selectable in sales",
+      "description": "'Caramel Popcorn (discontinued)' is removed from sale but is offered and sellable in New sale.",
+      "location": "GET/POST /sales/new",
+      "expected_severity": "major"
+    },
+    {
+      "id": "SH-03",
+      "category": "permission",
+      "title": "Cashier can open the profit report",
+      "description": "Profit report is admin-only in the menu but cashiers can open /reports/profit by URL.",
+      "location": "GET /reports/profit",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "SH-04",
+      "category": "calculation",
+      "title": "VAT is 1.5% instead of 15%",
+      "description": "Sales add 1.5% VAT although the app states VAT is 15%.",
+      "location": "POST /sales/new \u2192 sale totals",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "SH-05",
+      "category": "data_integrity",
+      "title": "Receiving a purchase does not increase stock",
+      "description": "Recording a purchase says 'stock received' but the product's stock is unchanged.",
+      "location": "POST /purchases",
+      "expected_severity": "major"
+    },
+    {
+      "id": "SH-06",
+      "category": "calculation",
+      "title": "Profit report uses selling price as cost",
+      "description": "Cost of goods sold = qty \u00d7 selling price, so gross profit is always $0.00.",
+      "location": "GET /reports/profit",
+      "expected_severity": "major"
+    },
+    {
+      "id": "SH-07",
+      "category": "validation",
+      "title": "Zero or negative selling price accepted",
+      "description": "A product can be saved with price 0 or -5.",
+      "location": "POST /products/new, /products/<id>/edit",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "SH-08",
+      "category": "validation",
+      "title": "Duplicate SKU accepted",
+      "description": "Two products can share the same SKU.",
+      "location": "POST /products/new",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "SH-09",
+      "category": "permission",
+      "title": "Cashier can edit product prices via URL",
+      "description": "/products/<id>/edit is not restricted to admins; a cashier can change prices.",
+      "location": "GET/POST /products/<id>/edit",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "SH-10",
+      "category": "broken_link",
+      "title": "Help center link is broken",
+      "description": "Footer 'Help center' returns 404 on every page.",
+      "location": "/help-center",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "SH-11",
+      "category": "js_error",
+      "title": "JavaScript error on Dashboard",
+      "description": "Uncaught TypeError: Cannot read properties of undefined (reading 'height').",
+      "location": "GET /",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "SH-12",
+      "category": "accessibility",
+      "title": "Icon-only buttons without accessible names",
+      "description": "The \u270e edit link on Products and the \ud83d\udda8 print button on a sale have no accessible name.",
+      "location": "GET /products, /sales/<id>",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "SH-13",
+      "category": "ui_responsive",
+      "title": "Products table overflows on mobile",
+      "description": "The products table is fixed at 1100px with no scroll container.",
+      "location": "GET /products @390px",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "SH-14",
+      "category": "state_transition",
+      "title": "Refunded sale can be refunded again",
+      "description": "'Refund sale' is offered and works for an already refunded sale, adding the items to stock again.",
+      "location": "POST /sales/<id>/refund",
+      "expected_severity": "major"
+    },
+    {
+      "id": "SH-15",
+      "category": "business_rule",
+      "title": "Low-stock alert misses low products",
+      "description": "Dashboard says 'Low stock (< 5)' but only lists products with 0 stock (Sea Salt Crisps with 3 and Greek Yogurt with 2 are missing).",
+      "location": "GET /",
+      "expected_severity": "minor"
+    }
+  ]
+}

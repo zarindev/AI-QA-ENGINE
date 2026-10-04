@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* Dark-first QA command centre. Tokens are CSS variables so the light theme is a single class swap. */
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(.light, .light *));
+
+:root,
+.dark {
+  --bg: #0a0f1c;
+  --bg-elevated: #0f1626;
+  --panel: rgba(17, 24, 39, 0.72);
+  --panel-solid: #111827;
+  --border: rgba(148, 163, 184, 0.14);
+  --border-strong: rgba(148, 163, 184, 0.26);
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --faint: #64748b;
+  --primary: #2563eb;
+  --primary-soft: rgba(37, 99, 235, 0.16);
+  --pass: #16a34a;
+  --fail: #dc2626;
+  --warn: #f59e0b;
+  --glow: 0 0 0 1px rgba(37, 99, 235, 0.35), 0 8px 40px -12px rgba(37, 99, 235, 0.45);
+  color-scheme: dark;
+}
+
+.light {
+  --bg: #f5f7fb;
+  --bg-elevated: #ffffff;
+  --panel: rgba(255, 255, 255, 0.85);
+  --panel-solid: #ffffff;
+  --border: rgba(15, 23, 42, 0.1);
+  --border-strong: rgba(15, 23, 42, 0.18);
+  --text: #0f172a;
+  --muted: #475569;
+  --faint: #94a3b8;
+  --primary-soft: rgba(37, 99, 235, 0.1);
+  --glow: 0 0 0 1px rgba(37, 99, 235, 0.25), 0 8px 30px -14px rgba(37, 99, 235, 0.35);
+  color-scheme: light;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --color-bg: var(--bg);
+  --color-elevated: var(--bg-elevated);
+  --color-panel: var(--panel);
+  --color-panel-solid: var(--panel-solid);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-pass: var(--pass);
+  --color-fail: var(--fail);
+  --color-warn: var(--warn);
+  --radius-card: 14px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(37, 99, 235, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(22, 163, 74, 0.06), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.light body {
+  background: var(--bg);
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.35);
+}
+
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+}
+
+/* React Flow theming */
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__controls {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: none;
+  border: 1px solid var(--border);
+}
+.react-flow__controls-button {
+  background: var(--panel-solid);
+  border-bottom: 1px solid var(--border);
+  fill: var(--text);
+  color: var(--text);
+}
+.react-flow__controls-button:hover {
+  background: var(--primary-soft);
+}
+.react-flow__minimap {
+  background: var(--panel-solid);
+  border-radius: 10px;
+}

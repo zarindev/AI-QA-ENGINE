@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Add doctor{% endblock %}
+{% block heading %}Add doctor{% endblock %}
+{% block content %}
+<div class="card">
+{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form">
+  <label for="name">Name</label><input id="name" name="name" value="{{ data.name }}" required>
+  <label for="specialty">Specialty</label>
+  <select id="specialty" name="specialty">{% for s in ['General practice','Cardiology','Dermatology','Pediatrics','Orthopedics'] %}<option {{ 'selected' if data.specialty == s }}>{{ s }}</option>{% endfor %}</select>
+  <label for="fee">Consultation fee ($)</label><input id="fee" name="fee" type="number" step="0.01" value="{{ data.fee }}" required>
+  <button class="btn primary" type="submit">Save doctor</button>
+</form></div>
+{% endblock %}

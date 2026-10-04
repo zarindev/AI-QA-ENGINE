@@ -2,27 +2,32 @@
 
 > Give it a URL. It learns the app, writes the tests, runs them, and reports the bugs.
 
-**Status: under construction (Phase 1 of 8 complete).** The full README arrives in Phase 7 — see
+**Status: under construction (Phase 2 of 8 complete).** The full README arrives in Phase 7 — see
 [docs/PROGRESS.md](docs/PROGRESS.md).
 
 100% local: no database, no cloud, no accounts. Data lives in `workspace/` as readable files; the only external
 call is the Anthropic Claude API with your own key.
 
-## Try the Phase 1 explorer
+## Try it
 
-Requires Python 3.11+ and Google Chrome.
+Requires Python 3.11+ and Google Chrome (Node.js is **not** needed).
+
+| | Windows | macOS / Linux |
+|---|---|---|
+| Install | `setup.bat` | `./setup.sh` |
+| Start | `start.bat` | `./start.sh` |
+| Demo apps | `demo_targets\start_demos.bat` | `./demo_targets/start_demos.sh` |
+
+QA Pilot opens at http://localhost:8000 (or the next free port). Click **Try with a demo app**, or create a project
+for `http://localhost:8101` with the demo accounts listed in [demo_targets/README.md](demo_targets/README.md).
+
+Command line:
 
 ```bash
-python -m venv .venv
-.venv/bin/pip install -r requirements.txt          # Windows: .venv\Scripts\pip install -r requirements.txt
 cd backend
-../.venv/bin/python cli.py run https://www.saucedemo.com \
-    --role standard:standard_user:secret_sauce --i-am-authorized --open
+../.venv/bin/python cli.py run http://localhost:8101 --env test \
+    --role "admin:admin@carepoint.test:Admin#2026" --i-am-authorized --open
 ```
-
-It explores the public pages and every role you pass, runs automatic checks (HTTP errors, JS errors, failed
-requests, broken images/links, slow pages, overflow, error text) and writes an HTML report. Safe Mode is the
-default: nothing that looks like delete, pay, checkout, transfer… is ever clicked.
 
 Only test sites you own or are authorized to test.
 

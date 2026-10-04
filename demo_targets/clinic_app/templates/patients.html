@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Patients{% endblock %}
+{% block heading %}Patients{% endblock %}
+{% block content %}
+<div class="actions">
+  {% if current_user.role in ('admin', 'receptionist') %}<a class="btn primary" href="{{ url_for('patient_new') }}">Register patient</a>{% endif %}
+  <form method="get" class="inline">
+    {# PLANTED CL-13: search box has no label, only a placeholder #}
+    <input name="q" value="{{ q }}" placeholder="Search name, phone or email" style="padding:8px;border:1px solid #d1d5db;border-radius:8px">
+    <button class="btn" type="submit">Search</button>
+  </form>
+</div>
+{# PLANTED CL-12: fixed minimum width and no scroll wrapper — overflows the viewport on phones #}
+<table class="table" style="min-width:1080px">
+  <tr><th>ID</th><th>Name</th><th>Date of birth</th><th>Phone</th><th>Email</th><th>Insurance</th><th>Coverage</th><th></th></tr>
+  {% for p in rows %}
+  <tr><td>P-{{ '%03d' % p.id }}</td><td><a href="{{ url_for('patient_detail', pid=p.id) }}">{{ p.name }}</a></td><td>{{ p.dob }}</td>
+      <td>{{ p.phone }}</td><td>{{ p.email }}</td><td>{{ p.insurance_provider or '—' }}</td><td>{{ p.coverage_pct }}%</td>
+      <td><a class="btn small" href="{{ url_for('patient_detail', pid=p.id) }}">✎</a></td></tr>
+  {% else %}<tr><td colspan="8" class="muted">No patients match “{{ q }}”.</td></tr>{% endfor %}
+</table>
+{% endblock %}

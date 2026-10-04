@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+<div class="cards">
+  <div class="card stat"><div class="num">{{ stats.available }}</div><div class="lbl">Cars available</div></div>
+  <div class="card stat"><div class="num">{{ stats.rented }}</div><div class="lbl">Cars rented</div></div>
+  <div class="card stat"><div class="num">{{ stats.maintenance }}</div><div class="lbl">In maintenance</div></div>
+  <div class="card stat"><div class="num">{{ stats.active }}</div><div class="lbl">{{ 'My active bookings' if current_user.role == 'customer' else 'Active bookings' }}</div></div>
+</div>
+<div class="card"><h2>Upcoming pickups</h2>
+{% if upcoming %}<table class="table"><tr><th>Booking</th><th>Car</th><th>Customer</th><th>Pickup</th><th>Return</th></tr>
+{% for b in upcoming %}<tr><td><a href="{{ url_for('booking_detail', bid=b.id) }}">B-{{ '%04d' % b.id }}</a></td><td>{{ cars.get(b.car_id) }}</td>
+<td>{{ users.get(b.customer_id) }}</td><td>{{ b.pickup_date }}</td><td>{{ b.return_date }}</td></tr>{% endfor %}</table>
+{% else %}<p class="muted">No upcoming pickups.</p>{% endif %}
+{% if current_user.role in ('agent', 'customer') %}<p><a class="btn primary" href="{{ url_for('booking_new') }}">New booking</a></p>{% endif %}
+</div>
+{% endblock %}

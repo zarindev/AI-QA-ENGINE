@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card">{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form">
+<div class="row"><div><label for="sku">SKU</label><input id="sku" name="sku" value="{{ data.sku }}" required></div>
+<div><label for="category">Category</label><select id="category" name="category">{% for c in ['Beverages','Snacks','Dairy','Bakery','Household','Personal care'] %}<option {{ 'selected' if data.category == c }}>{{ c }}</option>{% endfor %}</select></div></div>
+<label for="name">Product name</label><input id="name" name="name" value="{{ data.name }}" required>
+<div class="row"><div><label for="price">Selling price ($, excl. VAT)</label><input id="price" name="price" type="number" step="0.01" value="{{ data.price }}" required></div>
+<div><label for="cost">Unit cost ($)</label><input id="cost" name="cost" type="number" step="0.01" value="{{ data.cost }}" required></div></div>
+<label for="stock">Stock on hand</label><input id="stock" name="stock" type="number" value="{{ data.stock }}">
+<button class="btn primary" type="submit">Save product</button></form></div>
+{% endblock %}

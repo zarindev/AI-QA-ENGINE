@@ -27,11 +27,22 @@ from app.browser.driver import chrome_available  # noqa: E402
 from app.core.config import get_settings  # noqa: E402
 from app.core.logging import register_secret, setup_logging  # noqa: E402
 from app.explore import urls  # noqa: E402
-from app.explore.stage import FINDINGS_FILE, PAGES_FILE, run_explore  # noqa: E402
+from app.explore.stage import FINDINGS_FILE, PAGES_FILE  # noqa: E402
+from app.jobs import pipeline  # noqa: E402
 from app.jobs.run_state import RunTracker, mark_interrupted_runs  # noqa: E402
-from app.reports.html_basic import render_crawl_report  # noqa: E402
+from app.reports.html_basic import REPORT_FILE, render_crawl_report  # noqa: E402
 from app.storage.repository import NotFoundError, Repository  # noqa: E402
-from app.storage.schemas import CrawlResult, FindingsDoc, Project, Role, Run, Scope, utcnow  # noqa: E402
+from app.storage.schemas import (  # noqa: E402
+    CrawlResult,
+    FindingsDoc,
+    Project,
+    Role,
+    Run,
+    Scope,
+    SiteProfile,
+    utcnow,
+)
+from app.understand.stage import PROFILE_FILE  # noqa: E402
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="QA Pilot — AI website QA engine (local).")
 console = Console()
@@ -165,13 +176,11 @@ def run(
 
     run_obj = repo.create_run(Run(id=repo.new_run_id(project.slug), project_slug=project.slug, mode=mode))  # type: ignore[arg-type]
     tracker = RunTracker(repo, run_obj)
-    ai = AIClient(usage=run_obj.token_usage, on_usage=tracker.usage_update) if AIClient.available() else None
-    if ai is None:
+    if not AIClient.available():
         console.print(
-            "[yellow]No ANTHROPIC_API_KEY set:[/] exploring with heuristics only (AI login fallback disabled)."
+            "[yellow]No ANTHROPIC_API_KEY set:[/] exploring with heuristics and classifying offline."
         )
 
-    tracker.start(["explore", "report"])
     try:
         with Progress(
             TextColumn("[bold blue]{task.description}"),
@@ -187,34 +196,31 @@ def run(
                     bar.update(
                         task,
                         completed=e.get("overall", bar.tasks[0].completed),
-                        description=(e.get("message") or "Exploring")[:70],
+                        description=(e.get("message") or "Working")[:70],
                     )
                     if e["type"] in ("progress", "stage_done")
                     else None
                 )
             )
-            crawl, findings = run_explore(
-                repo,
-                tracker,
-                project,
-                settings,
-                ai=ai,
-                headless=not headed and settings["browser"]["headless"],
-            )
-        tracker.stage_start("report", "Writing HTML report")
-        report = render_crawl_report(repo, project, run_obj, crawl, findings)
-        tracker.stage_done("report", "HTML report written")
-        tracker.complete(f"{len(crawl.pages)} pages explored, {len(findings.findings)} findings")
+            pipeline.execute(repo, tracker, {"headless": not headed and settings["browser"]["headless"]})
     except KeyboardInterrupt:
         tracker.cancel()
         console.print("[yellow]Cancelled.[/]")
         raise typer.Exit(130) from None
-    except Exception as exc:
-        tracker.fail(f"{type(exc).__name__}: {exc}")
-        console.print(f"[red]Run failed:[/] {exc}")
-        raise typer.Exit(1) from exc
 
+    if tracker.run.status != "completed":
+        console.print(f"[red]Run {tracker.run.status}:[/] {tracker.run.error}")
+        raise typer.Exit(1)
+    crawl = repo.load_run_doc(run_obj, PAGES_FILE, CrawlResult)
+    findings = repo.load_run_doc(run_obj, FINDINGS_FILE, FindingsDoc)
+    profile = repo.load_run_doc(run_obj, PROFILE_FILE, SiteProfile)
     _print_summary(crawl, findings)
+    console.print(
+        f"\n[bold]Detected:[/] {profile.domain} · {profile.sub_type} "
+        f"({profile.confidence:.0%}, {'Claude' if profile.method == 'ai' else 'offline heuristic'})"
+    )
+    console.print(f"Entities: {', '.join(e.name for e in profile.entities) or '—'}")
+    report = repo.run_path(run_obj, REPORT_FILE)
     console.print(f"\n[bold green]Done.[/] Workspace: {repo.run_dir(project.slug, run_obj.id)}")
     console.print(f"Report: {report}")
     if open_report:

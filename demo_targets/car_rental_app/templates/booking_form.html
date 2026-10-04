@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}New booking{% endblock %}
+{% block heading %}New booking{% endblock %}
+{% block content %}
+<div class="card">{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form">
+<label for="car_id">Car</label>
+<select id="car_id" name="car_id" required><option value="">Select a car…</option>
+{% for c in cars %}<option value="{{ c.id }}" {{ 'selected' if (data.car_id or request.args.get('car')) == c.id|string }}>{{ c.make }} {{ c.model }} — {{ c.daily_rate|money }}/day</option>{% endfor %}</select>
+{% if current_user.role == 'agent' %}
+<label for="customer_id">Customer</label>
+<select id="customer_id" name="customer_id" required><option value="">Select customer…</option>
+{% for u in customers %}<option value="{{ u.id }}" {{ 'selected' if data.customer_id == u.id|string }}>{{ u.name }}</option>{% endfor %}</select>{% endif %}
+{# PLANTED CR-13: the date inputs have no <label>; the text above them is not associated #}
+<div class="row"><div><div class="muted">Pickup date</div><input name="pickup_date" type="date" value="{{ data.pickup_date }}" required></div>
+<div><div class="muted">Return date</div><input name="return_date" type="date" value="{{ data.return_date }}" required></div></div>
+<p class="muted">Rentals are charged per day. 7 days or more: 10% off. <a href="/rental-terms">Rental terms</a></p>
+<button class="btn primary" type="submit">Confirm booking</button></form></div>
+{% endblock %}

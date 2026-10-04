@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Appointment A-{{ '%03d' % a.id }}{% endblock %}
+{% block heading %}Appointment A-{{ '%03d' % a.id }}{% endblock %}
+{% block content %}
+<div class="grid-2">
+<div class="card"><h2>Details</h2>
+<dl class="kv"><dt>Patient</dt><dd>{% if patient %}<a href="{{ url_for('patient_detail', pid=patient.id) }}">{{ patient.name }}</a>{% else %}—{% endif %}</dd>
+<dt>Doctor</dt><dd>{{ doctor.name if doctor else '—' }}</dd><dt>Date</dt><dd>{{ a.date }} at {{ a.time }}</dd>
+<dt>Reason</dt><dd>{{ a.reason or '—' }}</dd><dt>Status</dt><dd><span class="badge info" id="appt-status">{{ a.status|replace('_',' ') }}</span></dd></dl>
+<div class="actions" style="margin-top:14px">
+  {% if a.status == 'scheduled' %}
+  <form method="post" action="{{ url_for('appointment_action', aid=a.id, action='check_in') }}"><button class="btn" type="submit">Check in</button></form>
+  <form method="post" action="{{ url_for('appointment_action', aid=a.id, action='cancel') }}"><button class="btn" type="submit">Cancel appointment</button></form>
+  {% endif %}
+  {% if a.status != 'completed' %}
+  <form method="post" action="{{ url_for('appointment_action', aid=a.id, action='complete') }}"><button class="btn primary" type="submit">Complete visit</button></form>
+  {% endif %}
+  {% if current_user.role == 'doctor' and a.status in ('checked_in', 'completed') %}
+  <a class="btn" href="{{ url_for('prescribe', aid=a.id) }}">Write prescription</a>{% endif %}
+</div></div>
+<div class="card"><h2>Invoice</h2>
+{% if invoice %}<dl class="kv"><dt>Invoice</dt><dd>INV-{{ '%04d' % invoice.id }}</dd><dt>Consultation fee</dt><dd>{{ invoice.amount|money }}</dd>
+<dt>Insurance coverage</dt><dd>{{ invoice.coverage_pct }}%</dd><dt>Patient pays</dt><dd id="invoice-total"><strong>{{ invoice.total|money }}</strong></dd>
+<dt>Status</dt><dd>{{ invoice.status }}</dd></dl>
+{% else %}<p class="muted">An invoice is created when the visit is completed.</p>{% endif %}</div>
+</div>
+<div class="card"><h2>Prescriptions</h2>
+{% for r in rx %}<div>{{ r.medication }} — {{ r.dosage }} for {{ r.days }} days</div>{% else %}<p class="muted">None.</p>{% endfor %}</div>
+{% endblock %}

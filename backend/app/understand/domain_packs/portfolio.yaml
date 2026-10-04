@@ -1,0 +1,36 @@
+# Domain Pack: Portfolio / personal site. Optional hints; QA Pilot works without a matching pack.
+name: portfolio
+label: Portfolio / personal site
+sub_types:
+- designer portfolio
+- developer portfolio
+- agency site
+keywords:
+  portfolio: 3
+  project: 1
+  about me: 3
+  resume: 2
+  cv: 2
+  case study: 2
+  hire me: 3
+  testimonial: 2
+  skills: 1
+typical_roles:
+- visitor
+typical_entities:
+- Project
+- Contact message
+typical_features:
+- Project gallery
+- About
+- Contact form
+critical_rules:
+- Contact form validates email and required fields
+- All project links work
+edge_cases:
+- Very long message
+- Broken external links
+priority_hints:
+  P1:
+  - contact form
+privacy_blur: false

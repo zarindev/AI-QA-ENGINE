@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Doctors{% endblock %}
+{% block heading %}Doctors{% endblock %}
+{% block content %}
+{% if current_user.role == 'admin' %}<div class="actions"><a class="btn primary" href="{{ url_for('doctor_new') }}">Add doctor</a></div>{% endif %}
+<table class="table"><tr><th></th><th>Name</th><th>Specialty</th><th>Consultation fee</th><th>Status</th><th></th></tr>
+{% for d in rows %}
+<tr>
+  {# PLANTED CL-13: decorative-but-meaningful avatar images have no alt text #}
+  <td><img src="/static/avatar.svg" width="28" height="28"></td>
+  <td>{{ d.name }}</td><td>{{ d.specialty }}</td><td>{{ d.fee|money }}</td>
+  <td>{% if d.active %}<span class="badge ok">active</span>{% else %}<span class="badge">inactive</span>{% endif %}</td>
+  <td>{% if current_user.role == 'admin' and d.active %}
+    <form method="post" action="{{ url_for('doctor_deactivate', did=d.id) }}" class="inline"><button class="btn small" type="submit">Deactivate</button></form>{% endif %}</td>
+</tr>{% endfor %}
+</table>
+{% endblock %}

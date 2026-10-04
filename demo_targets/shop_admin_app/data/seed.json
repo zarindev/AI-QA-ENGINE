@@ -1,0 +1,272 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Nadia Hussain",
+      "email": "admin@stockroom.test",
+      "password": "Admin#2026",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "name": "Ben Turner",
+      "email": "cashier@stockroom.test",
+      "password": "Till#2026",
+      "role": "cashier"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "sku": "BEV-001",
+      "name": "Sparkling Water 1L",
+      "category": "Beverages",
+      "price": 1.2,
+      "cost": 0.45,
+      "stock": 48,
+      "active": true
+    },
+    {
+      "id": 2,
+      "sku": "BEV-002",
+      "name": "Orange Juice 1L",
+      "category": "Beverages",
+      "price": 2.8,
+      "cost": 1.3,
+      "stock": 22,
+      "active": true
+    },
+    {
+      "id": 3,
+      "sku": "SNK-001",
+      "name": "Sea Salt Crisps",
+      "category": "Snacks",
+      "price": 1.5,
+      "cost": 0.6,
+      "stock": 3,
+      "active": true
+    },
+    {
+      "id": 4,
+      "sku": "SNK-002",
+      "name": "Dark Chocolate Bar",
+      "category": "Snacks",
+      "price": 2.2,
+      "cost": 0.95,
+      "stock": 30,
+      "active": true
+    },
+    {
+      "id": 5,
+      "sku": "DAI-001",
+      "name": "Whole Milk 2L",
+      "category": "Dairy",
+      "price": 1.9,
+      "cost": 0.85,
+      "stock": 15,
+      "active": true
+    },
+    {
+      "id": 6,
+      "sku": "DAI-002",
+      "name": "Greek Yogurt 500g",
+      "category": "Dairy",
+      "price": 2.6,
+      "cost": 1.2,
+      "stock": 2,
+      "active": true
+    },
+    {
+      "id": 7,
+      "sku": "BAK-001",
+      "name": "Sourdough Loaf",
+      "category": "Bakery",
+      "price": 3.5,
+      "cost": 1.4,
+      "stock": 12,
+      "active": true
+    },
+    {
+      "id": 8,
+      "sku": "HOU-001",
+      "name": "Dish Soap 750ml",
+      "category": "Household",
+      "price": 2.4,
+      "cost": 0.9,
+      "stock": 0,
+      "active": true
+    },
+    {
+      "id": 9,
+      "sku": "PER-001",
+      "name": "Toothpaste 100ml",
+      "category": "Personal care",
+      "price": 2.1,
+      "cost": 0.8,
+      "stock": 25,
+      "active": true
+    },
+    {
+      "id": 10,
+      "sku": "BAK-002",
+      "name": "Croissant (6-pack)",
+      "category": "Bakery",
+      "price": 4.2,
+      "cost": 1.9,
+      "stock": 8,
+      "active": true
+    },
+    {
+      "id": 11,
+      "sku": "SNK-003",
+      "name": "Caramel Popcorn (discontinued)",
+      "category": "Snacks",
+      "price": 1.8,
+      "cost": 0.7,
+      "stock": 14,
+      "active": false
+    }
+  ],
+  "sales": [
+    {
+      "id": 1,
+      "items": [
+        {
+          "product_id": 1,
+          "name": "Sparkling Water 1L",
+          "qty": 6,
+          "price": 1.2
+        },
+        {
+          "product_id": 4,
+          "name": "Dark Chocolate Bar",
+          "qty": 2,
+          "price": 2.2
+        }
+      ],
+      "subtotal": 11.6,
+      "vat": 1.74,
+      "total": 13.34,
+      "status": "completed",
+      "cashier_id": 2,
+      "date": {
+        "$date": -3
+      },
+      "payment": "card"
+    },
+    {
+      "id": 2,
+      "items": [
+        {
+          "product_id": 7,
+          "name": "Sourdough Loaf",
+          "qty": 1,
+          "price": 3.5
+        },
+        {
+          "product_id": 5,
+          "name": "Whole Milk 2L",
+          "qty": 2,
+          "price": 1.9
+        }
+      ],
+      "subtotal": 7.3,
+      "vat": 1.09,
+      "total": 8.39,
+      "status": "completed",
+      "cashier_id": 2,
+      "date": {
+        "$date": -2
+      },
+      "payment": "card"
+    },
+    {
+      "id": 3,
+      "items": [
+        {
+          "product_id": 2,
+          "name": "Orange Juice 1L",
+          "qty": 3,
+          "price": 2.8
+        }
+      ],
+      "subtotal": 8.4,
+      "vat": 1.26,
+      "total": 9.66,
+      "status": "completed",
+      "cashier_id": 1,
+      "date": {
+        "$date": -1
+      },
+      "payment": "card"
+    },
+    {
+      "id": 4,
+      "items": [
+        {
+          "product_id": 9,
+          "name": "Toothpaste 100ml",
+          "qty": 1,
+          "price": 2.1
+        },
+        {
+          "product_id": 3,
+          "name": "Sea Salt Crisps",
+          "qty": 2,
+          "price": 1.5
+        }
+      ],
+      "subtotal": 5.1,
+      "vat": 0.76,
+      "total": 5.86,
+      "status": "completed",
+      "cashier_id": 2,
+      "date": {
+        "$date": 0
+      },
+      "payment": "card"
+    },
+    {
+      "id": 5,
+      "items": [
+        {
+          "product_id": 10,
+          "name": "Croissant (6-pack)",
+          "qty": 1,
+          "price": 4.2
+        }
+      ],
+      "subtotal": 4.2,
+      "vat": 0.63,
+      "total": 4.83,
+      "status": "refunded",
+      "cashier_id": 2,
+      "date": {
+        "$date": -1
+      },
+      "payment": "card"
+    }
+  ],
+  "purchases": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "supplier": "FreshFarm Wholesale",
+      "qty": 24,
+      "unit_cost": 0.45,
+      "date": {
+        "$date": -10
+      }
+    },
+    {
+      "id": 2,
+      "product_id": 7,
+      "supplier": "Sunrise Bakery Co.",
+      "qty": 10,
+      "unit_cost": 1.4,
+      "date": {
+        "$date": -4
+      }
+    }
+  ]
+}

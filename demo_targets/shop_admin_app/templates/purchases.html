@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Purchases{% endblock %}
+{% block heading %}Purchases{% endblock %}
+{% block content %}
+<div class="grid-2">
+<div class="card"><h2>Receive stock</h2>{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form">
+<label for="product_id">Product</label><select id="product_id" name="product_id" required><option value="">Select…</option>
+{% for p in products if p.active %}<option value="{{ p.id }}">{{ p.name }} ({{ p.stock }} in stock)</option>{% endfor %}</select>
+<label for="supplier">Supplier</label><input id="supplier" name="supplier" list="suppliers" required>
+<datalist id="suppliers"><option>FreshFarm Wholesale</option><option>Metro Distributors</option><option>Sunrise Bakery Co.</option></datalist>
+<div class="row"><div><label for="qty">Quantity</label><input id="qty" name="qty" type="number" min="1" required></div>
+<div><label for="unit_cost">Unit cost ($)</label><input id="unit_cost" name="unit_cost" type="number" step="0.01" required></div></div>
+<button class="btn primary" type="submit">Record purchase</button></form></div>
+<div class="card"><h2>Recent purchases</h2><table class="table"><tr><th>Date</th><th>Product</th><th>Supplier</th><th>Qty</th><th>Unit cost</th></tr>
+{% for r in rows %}<tr><td>{{ r.date }}</td><td>{{ names.get(r.product_id) }}</td><td>{{ r.supplier }}</td><td>{{ r.qty }}</td><td>{{ r.unit_cost|money }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No purchases yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

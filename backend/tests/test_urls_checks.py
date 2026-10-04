@@ -122,3 +122,13 @@ def test_405_and_403_links_are_not_broken():
     c.add_broken_link(src, "https://h.test/admin", 403)
     c.add_broken_link(src, "https://h.test/gone", 404)
     assert [f.data["status"] for f in c.findings()] == [404]
+
+
+def test_error_text_not_double_reported_on_error_status():
+    raws = check_page(
+        _page(status_code=404, text_excerpt="Page not found."),
+        broken_images=[],
+        overflow_x=0,
+        slow_page_ms=3000,
+    )
+    assert [r.check for r in raws] == ["http_error"]

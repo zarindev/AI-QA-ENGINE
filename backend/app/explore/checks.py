@@ -198,7 +198,14 @@ def check_page(
         )
 
     visible_text = f"{page.title}\n{page.text_excerpt}"
-    for pattern, sev in _ERROR_PAGE_PATTERNS:
+    # On an error status the generic "not found"/"went wrong" text is the same symptom as the status itself;
+    # only leaked internals (stack traces, SQL errors) are worth a separate finding.
+    patterns = (
+        [(p, sev) for p, sev in _ERROR_PAGE_PATTERNS if sev == "critical"]
+        if status and status >= 400
+        else _ERROR_PAGE_PATTERNS
+    )
+    for pattern, sev in patterns:
         m = pattern.search(visible_text)
         if m:
             snippet = visible_text[max(0, m.start() - 60) : m.end() + 60].replace("\n", " ")

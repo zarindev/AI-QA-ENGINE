@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "app": "car_rental_app",
+  "name": "DriveNow Rentals",
+  "url": "http://localhost:8102",
+  "domain": "rental",
+  "roles": {
+    "admin": [
+      "admin@drivenow.test",
+      "Admin#2026"
+    ],
+    "agent": [
+      "agent@drivenow.test",
+      "Agent#2026"
+    ],
+    "customer": [
+      "liam@drivenow.test",
+      "Drive#2026"
+    ]
+  },
+  "note": "Answer key for scripts/benchmark.py only. The QA Pilot engine must never read this file.",
+  "bugs": [
+    {
+      "id": "CR-01",
+      "category": "validation",
+      "title": "Return date before pickup date is accepted",
+      "description": "Booking with a return date earlier than the pickup date succeeds and produces a negative price.",
+      "location": "POST /bookings/new",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CR-02",
+      "category": "business_rule",
+      "title": "Same car can be double-booked",
+      "description": "Two bookings for the same car with overlapping dates are both accepted.",
+      "location": "POST /bookings/new",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "CR-03",
+      "category": "calculation",
+      "title": "Same-day rental is charged 0 days",
+      "description": "Rental terms say minimum 1 day, but pickup = return gives 0 days and a $0.00 total.",
+      "location": "rental price on booking/invoice",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CR-04",
+      "category": "permission",
+      "title": "Customer can view other customers' bookings",
+      "description": "Customers can open any /bookings/<id>, exposing other customers' names, emails and prices.",
+      "location": "GET /bookings/<id>",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "CR-05",
+      "category": "permission",
+      "title": "Revenue report open to every role",
+      "description": "/admin/revenue is admin-only in the menu but agents and customers can open it by URL.",
+      "location": "GET /admin/revenue",
+      "expected_severity": "critical"
+    },
+    {
+      "id": "CR-06",
+      "category": "business_rule",
+      "title": "Car in maintenance can be booked",
+      "description": "Kia Picanto is in maintenance but is offered and bookable in the booking form.",
+      "location": "GET/POST /bookings/new",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CR-07",
+      "category": "state_transition",
+      "title": "Returned or cancelled booking can be handed over again",
+      "description": "'Hand over car' is offered and works for returned and cancelled bookings.",
+      "location": "POST /bookings/<id>/pickup",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CR-08",
+      "category": "calculation",
+      "title": "Weekly discount starts at 8 days instead of 7",
+      "description": "Terms promise 10% off for 7+ days; a 7-day rental gets no discount (boundary off by one).",
+      "location": "rental price",
+      "expected_severity": "major"
+    },
+    {
+      "id": "CR-09",
+      "category": "validation",
+      "title": "Negative daily rate accepted for a car",
+      "description": "Adding a car with daily rate -10 or 0 succeeds.",
+      "location": "POST /cars/new",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CR-10",
+      "category": "broken_link",
+      "title": "Terms & conditions link is broken",
+      "description": "Footer 'Terms & conditions' returns 404 on every page.",
+      "location": "/terms-and-conditions",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CR-11",
+      "category": "js_error",
+      "title": "JavaScript error on Availability page",
+      "description": "Uncaught ReferenceError: highlightToday is not defined.",
+      "location": "GET /calendar",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CR-12",
+      "category": "broken_image",
+      "title": "Tesla Model 3 photo is missing",
+      "description": "Car detail page for the Tesla Model 3 shows a broken image (404).",
+      "location": "GET /cars/4",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CR-13",
+      "category": "accessibility",
+      "title": "Booking date inputs have no labels",
+      "description": "Pickup and return date inputs are not associated with any label.",
+      "location": "GET /bookings/new",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CR-14",
+      "category": "ui_responsive",
+      "title": "Availability calendar overflows on mobile",
+      "description": "The 15-column calendar has fixed widths and no scroll container; at 390px the page scrolls sideways.",
+      "location": "GET /calendar @390px",
+      "expected_severity": "minor"
+    },
+    {
+      "id": "CR-15",
+      "category": "data_integrity",
+      "title": "Returned car stays 'rented'",
+      "description": "After 'Return car', the car's status remains rented, so fleet counts and availability are wrong.",
+      "location": "POST /bookings/<id>/return",
+      "expected_severity": "major"
+    }
+  ]
+}

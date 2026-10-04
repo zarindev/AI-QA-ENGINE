@@ -12,3 +12,8 @@ typer==0.27.2
 rich==15.0.0
 networkx==3.7
 Faker==40.40.0
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+sse-starlette==3.5.0
+# demo apps (demo_targets/)
+Flask==3.1.3

@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+{% block title %}{{ p.name }}{% endblock %}
+{% block heading %}{{ p.name }}{% endblock %}
+{% block content %}
+<div class="grid-2">
+<div class="card"><h2>Profile</h2>
+<dl class="kv"><dt>Patient ID</dt><dd>P-{{ '%03d' % p.id }}</dd><dt>Date of birth</dt><dd>{{ p.dob }}</dd>
+<dt>Phone</dt><dd>{{ p.phone }}</dd><dt>Email</dt><dd>{{ p.email }}</dd>
+<dt>Insurance</dt><dd>{{ p.insurance_provider or 'None' }} ({{ p.coverage_pct }}% coverage)</dd>
+<dt>Completed visits</dt><dd>{{ visits }}</dd></dl>
+{% if current_user.role == 'admin' %}
+<form method="post" action="{{ url_for('patient_delete', pid=p.id) }}" onsubmit="return confirm('Delete this patient?')" style="margin-top:14px">
+  <button class="btn danger" type="submit">Delete patient</button></form>{% endif %}
+</div>
+<div class="card"><h2>Invoices</h2>
+{% for i in invoices %}<div>INV-{{ '%04d' % i.id }} · {{ i.total|money }} · <span class="badge {{ 'ok' if i.status == 'paid' else 'warn' }}">{{ i.status }}</span></div>
+{% else %}<p class="muted">No invoices.</p>{% endfor %}</div>
+</div>
+<div class="card"><h2>Appointments</h2>
+<table class="table"><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Reason</th><th>Status</th></tr>
+{% for a in appts %}<tr><td><a href="{{ url_for('appointment_detail', aid=a.id) }}">{{ a.date }}</a></td><td>{{ a.time }}</td><td>{{ doctors.get(a.doctor_id) }}</td><td>{{ a.reason }}</td><td>{{ a.status|replace('_',' ') }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No appointments yet.</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>Prescriptions</h2>
+<table class="table"><tr><th>Date</th><th>Medication</th><th>Dosage</th><th>Days</th></tr>
+{% for r in rx %}<tr><td>{{ r.date }}</td><td>{{ r.medication }}</td><td>{{ r.dosage }}</td><td>{{ r.days }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">No prescriptions.</td></tr>{% endfor %}</table></div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}{{ c.make }} {{ c.model }}{% endblock %}
+{% block heading %}{{ c.make }} {{ c.model }}{% endblock %}
+{% block content %}
+<div class="grid-2">
+<div class="card"><img src="/static/{{ c.image }}" alt="{{ c.make }} {{ c.model }}" style="width:100%;max-height:220px;object-fit:contain;background:#f3f4f6;border-radius:8px"></div>
+<div class="card"><dl class="kv"><dt>Plate</dt><dd>{{ c.plate }}</dd><dt>Category</dt><dd>{{ c.category }}</dd><dt>Seats</dt><dd>{{ c.seats }}</dd>
+<dt>Daily rate</dt><dd>{{ c.daily_rate|money }}</dd><dt>Status</dt><dd id="car-status">{{ c.status }}</dd></dl>
+<div class="actions" style="margin-top:14px">
+{% if current_user.role in ('agent','customer') and c.status != 'retired' %}<a class="btn primary" href="{{ url_for('booking_new') }}?car={{ c.id }}">Book this car</a>{% endif %}
+{% if current_user.role == 'admin' %}<form method="post" action="{{ url_for('car_maintenance', cid=c.id) }}"><button class="btn" type="submit">{{ 'End maintenance' if c.status == 'maintenance' else 'Send to maintenance' }}</button></form>{% endif %}
+</div></div></div>
+{% if current_user.role != 'customer' %}
+<div class="card"><h2>Booking history</h2><table class="table"><tr><th>Booking</th><th>Customer</th><th>Pickup</th><th>Return</th><th>Status</th></tr>
+{% for b in history %}<tr><td><a href="{{ url_for('booking_detail', bid=b.id) }}">B-{{ '%04d' % b.id }}</a></td><td>{{ users.get(b.customer_id) }}</td><td>{{ b.pickup_date }}</td><td>{{ b.return_date }}</td><td>{{ b.status|replace('_',' ') }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No bookings yet.</td></tr>{% endfor %}</table></div>{% endif %}
+{% endblock %}

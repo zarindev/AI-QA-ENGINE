@@ -1,0 +1,334 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Ava Morgan",
+      "email": "admin@carepoint.test",
+      "password": "Admin#2026",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "name": "Dr. Daniel Lee",
+      "email": "dr.lee@carepoint.test",
+      "password": "Doctor#2026",
+      "role": "doctor",
+      "doctor_id": 1
+    },
+    {
+      "id": 3,
+      "name": "Dr. Priya Raman",
+      "email": "dr.raman@carepoint.test",
+      "password": "Doctor#2026",
+      "role": "doctor",
+      "doctor_id": 2
+    },
+    {
+      "id": 4,
+      "name": "Rita Gomez",
+      "email": "reception@carepoint.test",
+      "password": "Front#2026",
+      "role": "receptionist"
+    }
+  ],
+  "doctors": [
+    {
+      "id": 1,
+      "name": "Dr. Daniel Lee",
+      "specialty": "General practice",
+      "fee": 80.0,
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "Dr. Priya Raman",
+      "specialty": "Cardiology",
+      "fee": 150.0,
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "Dr. Tom\u00e1s Ortega",
+      "specialty": "Dermatology",
+      "fee": 120.0,
+      "active": true
+    },
+    {
+      "id": 4,
+      "name": "Dr. Helen Brooks",
+      "specialty": "Pediatrics",
+      "fee": 90.0,
+      "active": false
+    }
+  ],
+  "patients": [
+    {
+      "id": 1,
+      "name": "Maria Silva",
+      "dob": "1984-03-12",
+      "phone": "+1 555 0101",
+      "email": "maria.silva@example.test",
+      "insurance_provider": "BlueShield",
+      "coverage_pct": 20,
+      "visits": 2
+    },
+    {
+      "id": 2,
+      "name": "James Carter",
+      "dob": "1979-11-02",
+      "phone": "+1 555 0102",
+      "email": "james.carter@example.test",
+      "insurance_provider": "",
+      "coverage_pct": 0,
+      "visits": 1
+    },
+    {
+      "id": 3,
+      "name": "Aisha Khan",
+      "dob": "1992-07-25",
+      "phone": "+1 555 0103",
+      "email": "aisha.khan@example.test",
+      "insurance_provider": "MediCare Plus",
+      "coverage_pct": 50,
+      "visits": 0
+    },
+    {
+      "id": 4,
+      "name": "Lucas Becker",
+      "dob": "2001-01-30",
+      "phone": "+1 555 0104",
+      "email": "lucas.becker@example.test",
+      "insurance_provider": "BlueShield",
+      "coverage_pct": 20,
+      "visits": 1
+    },
+    {
+      "id": 5,
+      "name": "Chen Wei",
+      "dob": "1966-05-18",
+      "phone": "+1 555 0105",
+      "email": "chen.wei@example.test",
+      "insurance_provider": "Unity Health",
+      "coverage_pct": 80,
+      "visits": 3
+    },
+    {
+      "id": 6,
+      "name": "Sofia Rossi",
+      "dob": "1988-09-09",
+      "phone": "+1 555 0106",
+      "email": "sofia.rossi@example.test",
+      "insurance_provider": "",
+      "coverage_pct": 0,
+      "visits": 0
+    },
+    {
+      "id": 7,
+      "name": "Noah Williams",
+      "dob": "2015-12-01",
+      "phone": "+1 555 0107",
+      "email": "noah.w@example.test",
+      "insurance_provider": "MediCare Plus",
+      "coverage_pct": 50,
+      "visits": 1
+    },
+    {
+      "id": 8,
+      "name": "Fatima Okafor",
+      "dob": "1973-04-14",
+      "phone": "+1 555 0108",
+      "email": "fatima.okafor@example.test",
+      "insurance_provider": "Unity Health",
+      "coverage_pct": 80,
+      "visits": 0
+    }
+  ],
+  "appointments": [
+    {
+      "id": 1,
+      "patient_id": 1,
+      "doctor_id": 1,
+      "date": {
+        "$date": -20
+      },
+      "time": "09:00",
+      "reason": "Annual check-up",
+      "status": "completed"
+    },
+    {
+      "id": 2,
+      "patient_id": 2,
+      "doctor_id": 2,
+      "date": {
+        "$date": -12
+      },
+      "time": "10:30",
+      "reason": "Chest pain follow-up",
+      "status": "completed"
+    },
+    {
+      "id": 3,
+      "patient_id": 5,
+      "doctor_id": 2,
+      "date": {
+        "$date": -6
+      },
+      "time": "14:00",
+      "reason": "ECG review",
+      "status": "completed"
+    },
+    {
+      "id": 4,
+      "patient_id": 3,
+      "doctor_id": 3,
+      "date": {
+        "$date": -3
+      },
+      "time": "11:00",
+      "reason": "Skin rash",
+      "status": "cancelled"
+    },
+    {
+      "id": 5,
+      "patient_id": 4,
+      "doctor_id": 1,
+      "date": {
+        "$date": 0
+      },
+      "time": "09:30",
+      "reason": "Flu symptoms",
+      "status": "checked_in"
+    },
+    {
+      "id": 6,
+      "patient_id": 6,
+      "doctor_id": 1,
+      "date": {
+        "$date": 1
+      },
+      "time": "10:00",
+      "reason": "Blood test results",
+      "status": "scheduled"
+    },
+    {
+      "id": 7,
+      "patient_id": 7,
+      "doctor_id": 1,
+      "date": {
+        "$date": 2
+      },
+      "time": "15:30",
+      "reason": "Vaccination",
+      "status": "scheduled"
+    },
+    {
+      "id": 8,
+      "patient_id": 8,
+      "doctor_id": 2,
+      "date": {
+        "$date": 3
+      },
+      "time": "09:00",
+      "reason": "Blood pressure",
+      "status": "scheduled"
+    },
+    {
+      "id": 9,
+      "patient_id": 1,
+      "doctor_id": 3,
+      "date": {
+        "$date": 5
+      },
+      "time": "13:00",
+      "reason": "Mole check",
+      "status": "scheduled"
+    },
+    {
+      "id": 10,
+      "patient_id": 5,
+      "doctor_id": 2,
+      "date": {
+        "$date": 7
+      },
+      "time": "11:30",
+      "reason": "Cardiology consult",
+      "status": "scheduled"
+    }
+  ],
+  "prescriptions": [
+    {
+      "id": 1,
+      "appointment_id": 1,
+      "patient_id": 1,
+      "doctor_id": 1,
+      "medication": "Vitamin D3",
+      "dosage": "1000 IU daily",
+      "days": 90,
+      "date": {
+        "$date": -20
+      }
+    },
+    {
+      "id": 2,
+      "appointment_id": 2,
+      "patient_id": 2,
+      "doctor_id": 2,
+      "medication": "Atorvastatin",
+      "dosage": "20 mg nightly",
+      "days": 30,
+      "date": {
+        "$date": -12
+      }
+    },
+    {
+      "id": 3,
+      "appointment_id": 3,
+      "patient_id": 5,
+      "doctor_id": 2,
+      "medication": "Metoprolol",
+      "dosage": "50 mg twice daily",
+      "days": 60,
+      "date": {
+        "$date": -6
+      }
+    }
+  ],
+  "invoices": [
+    {
+      "id": 1,
+      "appointment_id": 1,
+      "patient_id": 1,
+      "amount": 80.0,
+      "coverage_pct": 20,
+      "total": 64.0,
+      "status": "paid",
+      "date": {
+        "$date": -20
+      }
+    },
+    {
+      "id": 2,
+      "appointment_id": 2,
+      "patient_id": 2,
+      "amount": 150.0,
+      "coverage_pct": 0,
+      "total": 150.0,
+      "status": "paid",
+      "date": {
+        "$date": -12
+      }
+    },
+    {
+      "id": 3,
+      "appointment_id": 3,
+      "patient_id": 5,
+      "amount": 150.0,
+      "coverage_pct": 80,
+      "total": 30.0,
+      "status": "unpaid",
+      "date": {
+        "$date": -6
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+# Domain Pack: E-commerce / retail. Optional hints; QA Pilot works without a matching pack.
+name: ecommerce
+label: E-commerce / retail
+sub_types:
+- online store
+- marketplace
+- point of sale / retail back office
+- inventory management
+keywords:
+  product: 2
+  cart: 3
+  checkout: 3
+  order: 2
+  sku: 3
+  stock: 2
+  inventory: 3
+  price: 1
+  sale: 2
+  cashier: 3
+  vat: 2
+  tax: 1
+  refund: 2
+  supplier: 2
+  purchase: 1
+  shipping: 2
+  catalog: 2
+typical_roles:
+- admin
+- manager
+- cashier
+- customer
+- vendor
+typical_entities:
+- Product
+- Order
+- Sale
+- Customer
+- Supplier
+- Purchase
+- Stock movement
+typical_features:
+- Product catalog
+- Cart and checkout
+- Point of sale
+- Inventory
+- Purchasing
+- Refunds
+- Sales and profit reports
+critical_rules:
+- Stock cannot go negative
+- Totals = subtotal + tax at the stated rate
+- Inactive products cannot be sold
+- Receiving a purchase increases stock
+- A sale can be refunded only once
+- Profit = revenue − cost of goods
+- SKU is unique
+edge_cases:
+- Quantity above stock
+- Zero/negative price
+- Discontinued product
+- Double refund
+- Rounding of tax
+priority_hints:
+  P1:
+  - payment
+  - totals
+  - stock
+  - permission
+  P2:
+  - catalog
+privacy_blur: false

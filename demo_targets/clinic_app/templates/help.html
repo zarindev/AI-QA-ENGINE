@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Help{% endblock %}
+{% block heading %}Help{% endblock %}
+{% block content %}
+<div class="card"><h2>How CarePoint works</h2>
+<ul>
+<li>Receptionists register patients and book appointments with a doctor. A doctor cannot have two appointments at the same date and time.</li>
+<li>Appointments go <em>scheduled → checked in → completed</em>. Scheduled appointments can be cancelled; cancelled appointments cannot be completed.</li>
+<li>Completing a visit creates an invoice. The patient pays the consultation fee minus their insurance coverage: <code>fee × (1 − coverage%)</code>.</li>
+<li>Doctors write prescriptions for their own patients' visits. Duration must be at least 1 day.</li>
+<li>Only administrators can add doctors and view financial reports. Deactivated doctors cannot be booked.</li>
+</ul></div>
+{% endblock %}

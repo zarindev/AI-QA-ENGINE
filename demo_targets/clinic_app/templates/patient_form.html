@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Register patient{% endblock %}
+{% block heading %}Register patient{% endblock %}
+{% block content %}
+<div class="card">
+{% for e in errors %}<div class="alert error" role="alert">{{ e }}</div>{% endfor %}
+<form method="post" class="form">
+  <label for="name">Full name</label><input id="name" name="name" value="{{ data.name }}" required>
+  <div class="row">
+    <div><label for="dob">Date of birth</label><input id="dob" name="dob" type="date" value="{{ data.dob }}" required></div>
+    <div><label for="phone">Phone</label><input id="phone" name="phone" value="{{ data.phone }}"></div>
+  </div>
+  <label for="email">Email</label><input id="email" name="email" value="{{ data.email }}">
+  <div class="row">
+    <div><label for="insurance_provider">Insurance provider</label><input id="insurance_provider" name="insurance_provider" value="{{ data.insurance_provider }}"></div>
+    <div><label for="coverage_pct">Coverage (%)</label><input id="coverage_pct" name="coverage_pct" type="number" min="0" max="100" value="{{ data.coverage_pct or 0 }}"></div>
+  </div>
+  <button class="btn primary" type="submit">Save patient</button>
+</form>
+</div>
+{% endblock %}

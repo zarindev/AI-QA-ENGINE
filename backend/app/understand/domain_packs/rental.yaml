@@ -1,0 +1,59 @@
+# Domain Pack: Rental (cars, equipment, property). Optional hints; QA Pilot works without a matching pack.
+name: rental
+label: Rental (cars, equipment, property)
+sub_types:
+- car rental
+- equipment rental
+- bike rental
+- vacation rental
+keywords:
+  rental: 3
+  rent: 2
+  pickup: 3
+  return date: 3
+  fleet: 3
+  vehicle: 2
+  car: 2
+  booking: 1
+  daily rate: 3
+  mileage: 2
+  plate: 2
+  availability: 1
+  hand over: 2
+typical_roles:
+- admin
+- agent
+- customer
+typical_entities:
+- Vehicle
+- Customer
+- Booking
+- Invoice
+- Location
+typical_features:
+- Fleet management
+- Availability calendar
+- Bookings
+- Pickup and return
+- Invoicing
+- Revenue reports
+critical_rules:
+- Return date must be on or after pickup date
+- A vehicle cannot be double-booked for overlapping dates
+- Vehicles in maintenance cannot be booked
+- Rental days = return − pickup, minimum 1
+- Long-rental discounts apply at the stated threshold
+- Returned vehicles become available
+edge_cases:
+- Same-day rental
+- Exactly 7-day rental
+- Overlapping bookings
+- Customer viewing another customer's booking
+priority_hints:
+  P1:
+  - pricing
+  - booking overlap
+  - permission
+  P2:
+  - availability
+privacy_blur: false

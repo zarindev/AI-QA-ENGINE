@@ -1,0 +1,47 @@
+# Domain Pack: Booking / scheduling. Optional hints; QA Pilot works without a matching pack.
+name: booking
+label: Booking / scheduling
+sub_types:
+- hotel booking
+- event ticketing
+- salon/appointments
+- travel
+keywords:
+  booking: 2
+  reservation: 3
+  check-in: 2
+  check-out: 2
+  guest: 2
+  room: 2
+  slot: 2
+  ticket: 2
+  event: 1
+  availability: 2
+typical_roles:
+- admin
+- staff
+- customer
+typical_entities:
+- Booking
+- Resource
+- Customer
+- Payment
+typical_features:
+- Availability
+- Reservations
+- Cancellations
+- Payments
+- Confirmations
+critical_rules:
+- No double booking of a resource
+- Check-out after check-in
+- Cancellation policy applied correctly
+edge_cases:
+- Last available slot
+- Same-day booking
+- Time zones
+priority_hints:
+  P1:
+  - payments
+  - double booking
+privacy_blur: false

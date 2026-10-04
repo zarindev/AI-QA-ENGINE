@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block title %}Sale S-{{ '%05d' % s.id }}{% endblock %}
+{% block heading %}Sale S-{{ '%05d' % s.id }}{% endblock %}
+{% block content %}
+<div class="card">
+<p class="muted">{{ s.date }} · cashier {{ cashier.name if cashier else '—' }} · paid by {{ s.payment }} · <span class="badge {{ 'ok' if s.status == 'completed' else 'warn' }}" id="sale-status">{{ s.status }}</span></p>
+<table class="table"><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Line total</th></tr>
+{% for line in s['items'] %}<tr><td>{{ line.name }}</td><td>{{ line.qty }}</td><td>{{ line.price|money }}</td><td>{{ (line.qty * line.price)|money }}</td></tr>{% endfor %}
+</table>
+<dl class="kv" style="margin-top:14px;max-width:360px"><dt>Subtotal</dt><dd id="sale-subtotal">{{ s.subtotal|money }}</dd><dt>VAT ({{ vat }}%)</dt><dd id="sale-vat">{{ s.vat|money }}</dd>
+<dt>Total</dt><dd id="sale-total"><strong>{{ s.total|money }}</strong></dd></dl>
+<div class="actions" style="margin-top:14px">
+  <button class="btn" type="button" onclick="window.print()">🖨</button>
+  {% if current_user.role == 'admin' %}<form method="post" action="{{ url_for('sale_refund', sid=s.id) }}"><button class="btn" type="submit">Refund sale</button></form>{% endif %}
+</div></div>
+{% endblock %}

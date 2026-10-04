@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Profit report{% endblock %}
+{% block heading %}Profit report{% endblock %}
+{% block content %}
+<div class="cards"><div class="card stat"><div class="num">{{ revenue|money }}</div><div class="lbl">Revenue (excl. VAT)</div></div>
+<div class="card stat"><div class="num">{{ cogs|money }}</div><div class="lbl">Cost of goods sold</div></div>
+<div class="card stat"><div class="num" id="gross-profit">{{ profit|money }}</div><div class="lbl">Gross profit</div></div></div>
+<div class="card"><p class="muted">Gross profit = revenue − (quantity sold × unit cost), completed sales only.</p>
+<table class="table"><tr><th>Product</th><th>Qty sold</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr>
+{% for name, r in rows.items() %}<tr><td>{{ name }}</td><td>{{ r.qty }}</td><td>{{ r.revenue|money }}</td><td>{{ r.cost|money }}</td><td>{{ (r.revenue - r.cost)|money }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No completed sales.</td></tr>{% endfor %}</table></div>
+{% endblock %}

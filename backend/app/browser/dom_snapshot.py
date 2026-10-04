@@ -161,7 +161,10 @@ const formInfo = forms.map((f, i) => {
 });
 
 const tables = Array.from(document.querySelectorAll('table, [role=table], [role=grid]')).slice(0, 20).map(t => {
-  let headers = Array.from(t.querySelectorAll('th, [role=columnheader]')).map(h => clean(h.innerText)).filter(Boolean);
+  // Column headers only: the header row (thead, or the first row), not row headers like <th scope=row>.
+  const headRow = t.querySelector('thead tr') || t.querySelector('tr, [role=row]');
+  let headers = headRow ? Array.from(headRow.querySelectorAll('th, [role=columnheader]')).map(h => clean(h.innerText)).filter(Boolean) : [];
+  if (!headers.length) headers = Array.from(t.querySelectorAll('[role=columnheader]')).map(h => clean(h.innerText)).filter(Boolean);
   const rows = t.querySelectorAll('tbody tr, [role=row]').length;
   const cap = t.querySelector('caption');
   return {headers: headers.slice(0, 40), row_count: rows, caption: cap ? clean(cap.innerText) : ''};

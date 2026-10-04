@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Prescriptions{% endblock %}
+{% block heading %}Prescriptions{% endblock %}
+{% block content %}
+<table class="table"><tr><th>Date</th><th>Patient</th><th>Doctor</th><th>Medication</th><th>Dosage</th><th>Days</th><th>Visit</th></tr>
+{% for r in rows %}<tr><td>{{ r.date }}</td><td>{{ patients.get(r.patient_id, '—') }}</td><td>{{ doctors.get(r.doctor_id, '—') }}</td>
+<td>{{ r.medication }}</td><td>{{ r.dosage }}</td><td>{{ r.days }}</td><td><a href="{{ url_for('appointment_detail', aid=r.appointment_id) }}">A-{{ '%03d' % r.appointment_id }}</a></td></tr>
+{% else %}<tr><td colspan="7" class="muted">No prescriptions yet.</td></tr>{% endfor %}</table>
+{% endblock %}

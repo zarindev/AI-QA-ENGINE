@@ -1,0 +1,51 @@
+# Domain Pack: Banking / finance. Optional hints; QA Pilot works without a matching pack.
+name: banking
+label: Banking / finance
+sub_types:
+- online banking
+- loans
+- payments
+- accounting
+keywords:
+  account: 1
+  balance: 3
+  transfer: 3
+  transaction: 3
+  loan: 3
+  interest: 2
+  deposit: 2
+  withdraw: 3
+  iban: 3
+  statement: 2
+  beneficiary: 3
+typical_roles:
+- admin
+- teller
+- customer
+- auditor
+typical_entities:
+- Account
+- Transaction
+- Transfer
+- Loan
+- Beneficiary
+typical_features:
+- Accounts
+- Transfers
+- Statements
+- Loans
+- Beneficiaries
+critical_rules:
+- Balance cannot go below the overdraft limit
+- Transfers debit and credit the same amount
+- Customers see only their own accounts
+- Interest computed at the stated rate
+edge_cases:
+- Transfer to self
+- Insufficient funds
+- Rounding
+priority_hints:
+  P1:
+  - money
+  - permission
+privacy_blur: true

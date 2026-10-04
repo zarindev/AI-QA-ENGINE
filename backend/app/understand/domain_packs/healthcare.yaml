@@ -1,0 +1,68 @@
+# Domain Pack: Healthcare / clinic management. Optional hints; QA Pilot works without a matching pack.
+name: healthcare
+label: Healthcare / clinic management
+sub_types:
+- clinic management
+- hospital management
+- pharmacy
+- telehealth
+- lab management
+keywords:
+  patient: 3
+  doctor: 3
+  appointment: 2
+  prescription: 3
+  clinic: 3
+  hospital: 3
+  diagnosis: 2
+  medical: 2
+  physician: 2
+  nurse: 2
+  insurance: 1
+  ward: 1
+  pharmacy: 2
+  medication: 2
+  dosage: 2
+  triage: 2
+typical_roles:
+- admin
+- doctor
+- nurse
+- receptionist
+- pharmacist
+- patient
+typical_entities:
+- Patient
+- Doctor
+- Appointment
+- Prescription
+- Invoice
+- Department
+typical_features:
+- Patient registration
+- Appointment scheduling
+- Prescriptions
+- Billing with insurance
+- Medical records
+- Reports
+critical_rules:
+- A doctor cannot have two appointments at the same time
+- Invoice total = fee minus insurance coverage
+- Only clinicians can write prescriptions
+- Prescription duration and dosage must be positive
+- Patients' data is visible only to authorized staff
+- Date of birth cannot be in the future
+edge_cases:
+- Booking in the past
+- Cancelled appointment completed
+- Deactivated doctor still bookable
+- 0% and 100% insurance coverage
+priority_hints:
+  P1:
+  - billing
+  - prescription
+  - permission
+  - patient data
+  P2:
+  - appointments
+privacy_blur: true

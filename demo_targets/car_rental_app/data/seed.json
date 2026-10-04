@@ -1,0 +1,271 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Omar Haddad",
+      "email": "admin@drivenow.test",
+      "password": "Admin#2026",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "name": "Grace Kim",
+      "email": "agent@drivenow.test",
+      "password": "Agent#2026",
+      "role": "agent"
+    },
+    {
+      "id": 3,
+      "name": "Liam O'Brien",
+      "email": "liam@drivenow.test",
+      "password": "Drive#2026",
+      "role": "customer"
+    },
+    {
+      "id": 4,
+      "name": "Mei Tanaka",
+      "email": "mei@drivenow.test",
+      "password": "Drive#2026",
+      "role": "customer"
+    },
+    {
+      "id": 5,
+      "name": "Carlos Mendes",
+      "email": "carlos@drivenow.test",
+      "password": "Drive#2026",
+      "role": "customer"
+    }
+  ],
+  "cars": [
+    {
+      "id": 1,
+      "make": "Toyota",
+      "model": "Corolla",
+      "plate": "DN-101",
+      "category": "Economy",
+      "daily_rate": 42.0,
+      "seats": 5,
+      "status": "available",
+      "image": "car-generic.svg"
+    },
+    {
+      "id": 2,
+      "make": "Volkswagen",
+      "model": "Golf",
+      "plate": "DN-102",
+      "category": "Compact",
+      "daily_rate": 48.0,
+      "seats": 5,
+      "status": "available",
+      "image": "car-generic.svg"
+    },
+    {
+      "id": 3,
+      "make": "Honda",
+      "model": "CR-V",
+      "plate": "DN-103",
+      "category": "SUV",
+      "daily_rate": 75.0,
+      "seats": 5,
+      "status": "rented",
+      "image": "car-generic.svg"
+    },
+    {
+      "id": 4,
+      "make": "Tesla",
+      "model": "Model 3",
+      "plate": "DN-104",
+      "category": "Luxury",
+      "daily_rate": 120.0,
+      "seats": 5,
+      "status": "available",
+      "image": "tesla-model3.jpg"
+    },
+    {
+      "id": 5,
+      "make": "Ford",
+      "model": "Transit",
+      "plate": "DN-105",
+      "category": "Van",
+      "daily_rate": 95.0,
+      "seats": 9,
+      "status": "available",
+      "image": "car-generic.svg"
+    },
+    {
+      "id": 6,
+      "make": "Kia",
+      "model": "Picanto",
+      "plate": "DN-106",
+      "category": "Economy",
+      "daily_rate": 35.0,
+      "seats": 4,
+      "status": "maintenance",
+      "image": "car-generic.svg"
+    },
+    {
+      "id": 7,
+      "make": "BMW",
+      "model": "X5",
+      "plate": "DN-107",
+      "category": "Luxury",
+      "daily_rate": 160.0,
+      "seats": 5,
+      "status": "available",
+      "image": "car-generic.svg"
+    },
+    {
+      "id": 8,
+      "make": "Hyundai",
+      "model": "Tucson",
+      "plate": "DN-108",
+      "category": "SUV",
+      "daily_rate": 70.0,
+      "seats": 5,
+      "status": "available",
+      "image": "car-generic.svg"
+    }
+  ],
+  "bookings": [
+    {
+      "id": 1,
+      "car_id": 1,
+      "customer_id": 3,
+      "pickup_date": {
+        "$date": -30
+      },
+      "return_date": {
+        "$date": -25
+      },
+      "status": "returned",
+      "daily_rate": 42.0,
+      "quote_total": 210.0
+    },
+    {
+      "id": 2,
+      "car_id": 2,
+      "customer_id": 4,
+      "pickup_date": {
+        "$date": -14
+      },
+      "return_date": {
+        "$date": -7
+      },
+      "status": "returned",
+      "daily_rate": 48.0,
+      "quote_total": 302.4
+    },
+    {
+      "id": 3,
+      "car_id": 3,
+      "customer_id": 5,
+      "pickup_date": {
+        "$date": -2
+      },
+      "return_date": {
+        "$date": 4
+      },
+      "status": "picked_up",
+      "daily_rate": 75.0,
+      "quote_total": 450.0
+    },
+    {
+      "id": 4,
+      "car_id": 4,
+      "customer_id": 3,
+      "pickup_date": {
+        "$date": 3
+      },
+      "return_date": {
+        "$date": 6
+      },
+      "status": "reserved",
+      "daily_rate": 120.0,
+      "quote_total": 360.0
+    },
+    {
+      "id": 5,
+      "car_id": 7,
+      "customer_id": 4,
+      "pickup_date": {
+        "$date": 5
+      },
+      "return_date": {
+        "$date": 12
+      },
+      "status": "reserved",
+      "daily_rate": 160.0,
+      "quote_total": 1008.0
+    },
+    {
+      "id": 6,
+      "car_id": 5,
+      "customer_id": 5,
+      "pickup_date": {
+        "$date": 10
+      },
+      "return_date": {
+        "$date": 11
+      },
+      "status": "reserved",
+      "daily_rate": 95.0,
+      "quote_total": 95.0
+    },
+    {
+      "id": 7,
+      "car_id": 8,
+      "customer_id": 3,
+      "pickup_date": {
+        "$date": -9
+      },
+      "return_date": {
+        "$date": -8
+      },
+      "status": "cancelled",
+      "daily_rate": 70.0,
+      "quote_total": 70.0
+    },
+    {
+      "id": 8,
+      "car_id": 2,
+      "customer_id": 5,
+      "pickup_date": {
+        "$date": 8
+      },
+      "return_date": {
+        "$date": 15
+      },
+      "status": "reserved",
+      "daily_rate": 48.0,
+      "quote_total": 302.4
+    }
+  ],
+  "invoices": [
+    {
+      "id": 1,
+      "booking_id": 1,
+      "customer_id": 3,
+      "days": 5,
+      "subtotal": 210.0,
+      "discount": 0.0,
+      "total": 210.0,
+      "status": "paid",
+      "date": {
+        "$date": -25
+      }
+    },
+    {
+      "id": 2,
+      "booking_id": 2,
+      "customer_id": 4,
+      "days": 7,
+      "subtotal": 336.0,
+      "discount": 33.6,
+      "total": 302.4,
+      "status": "unpaid",
+      "date": {
+        "$date": -7
+      }
+    }
+  ]
+}

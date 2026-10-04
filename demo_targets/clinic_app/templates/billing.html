@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Billing{% endblock %}
+{% block heading %}Billing{% endblock %}
+{% block content %}
+<table class="table"><tr><th>Invoice</th><th>Date</th><th>Patient</th><th>Fee</th><th>Coverage</th><th>Patient pays</th><th>Status</th><th></th></tr>
+{% for i in rows %}<tr><td>INV-{{ '%04d' % i.id }}</td><td>{{ i.date }}</td><td>{{ patients.get(i.patient_id, '—') }}</td><td>{{ i.amount|money }}</td>
+<td>{{ i.coverage_pct }}%</td><td>{{ i.total|money }}</td>
+<td><span class="badge {{ 'ok' if i.status == 'paid' else 'warn' }}">{{ i.status }}</span></td>
+<td>{% if i.status == 'unpaid' %}<form method="post" action="{{ url_for('invoice_pay', iid=i.id) }}" class="inline"><button class="btn small" type="submit">Mark paid</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="8" class="muted">No invoices yet.</td></tr>{% endfor %}</table>
+{% endblock %}

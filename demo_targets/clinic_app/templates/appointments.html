@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}Appointments{% endblock %}
+{% block heading %}Appointments{% endblock %}
+{% block content %}
+<div class="actions">
+  {% if current_user.role in ('admin', 'receptionist') %}<a class="btn primary" href="{{ url_for('appointment_new') }}">Book appointment</a>{% endif %}
+  <form method="get" class="inline"><label for="status">Status</label>
+    <select id="status" name="status" onchange="this.form.submit()"><option value="">All</option>
+    {% for s in ['scheduled','checked_in','completed','cancelled'] %}<option value="{{ s }}" {{ 'selected' if status == s }}>{{ s|replace('_',' ') }}</option>{% endfor %}</select>
+    <button class="btn" type="submit">Filter</button></form>
+</div>
+<div class="table-wrap"><table class="table" id="appointments-table"><tr><th>#</th><th>Date</th><th>Time</th><th>Patient</th><th>Doctor</th><th>Reason</th><th>Status</th></tr>
+{% for a in rows %}<tr><td><a href="{{ url_for('appointment_detail', aid=a.id) }}">A-{{ '%03d' % a.id }}</a></td><td>{{ a.date }}</td><td>{{ a.time }}</td>
+<td>{{ patients.get(a.patient_id, '—') }}</td><td>{{ doctors.get(a.doctor_id, '—') }}</td><td>{{ a.reason }}</td><td><span class="badge info">{{ a.status|replace('_',' ') }}</span></td></tr>
+{% else %}<tr><td colspan="7" class="muted">No appointments.</td></tr>{% endfor %}</table></div>
+<p class="muted" id="appt-summary"></p>
+{% endblock %}
+{% block scripts %}
+<script>
+  const rows = document.querySelectorAll('#appointments-table tr').length - 1;
+  document.getElementById('appt-summary').textContent = rows + ' appointments shown';
+  // PLANTED CL-11: the counter element was renamed; this line throws "Cannot set properties of null".
+  document.getElementById('apptCount').textContent = rows;
+</script>
+{% endblock %}

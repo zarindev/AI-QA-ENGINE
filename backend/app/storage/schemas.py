@@ -322,12 +322,23 @@ class Feature(Model):
     pages: list[str] = Field(default_factory=list)
 
 
+class RoleProfile(Model):
+    name: str
+    description: str = ""
+    observed: bool = False  # True when we crawled the site as this role
+
+
 class SiteProfile(Document):
     domain: str
     sub_type: str = ""
     confidence: float = 0.0
     summary: str = ""
+    method: Literal["ai", "heuristic"] = "ai"
+    domain_scores: dict[str, float] = Field(
+        default_factory=dict
+    )  # heuristic keyword scores, for transparency
     roles: list[str] = Field(default_factory=list)
+    role_details: list[RoleProfile] = Field(default_factory=list)
     modules: list[str] = Field(default_factory=list)
     features: list[Feature] = Field(default_factory=list)
     entities: list[Entity] = Field(default_factory=list)

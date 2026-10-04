@@ -1,0 +1,50 @@
+# Domain Pack: Real estate / property. Optional hints; QA Pilot works without a matching pack.
+name: real_estate
+label: Real estate / property
+sub_types:
+- listings portal
+- property management
+- agency CRM
+keywords:
+  property: 3
+  listing: 3
+  tenant: 3
+  lease: 3
+  landlord: 3
+  rent: 1
+  viewing: 2
+  agent: 1
+  bedroom: 2
+  sqft: 2
+  mortgage: 2
+typical_roles:
+- admin
+- agent
+- landlord
+- tenant
+- buyer
+typical_entities:
+- Property
+- Listing
+- Lease
+- Tenant
+- Viewing
+- Payment
+typical_features:
+- Listings
+- Viewings
+- Leases
+- Rent collection
+- Maintenance requests
+critical_rules:
+- Lease end after start
+- A property cannot have two active leases
+- Rent due dates follow the lease
+edge_cases:
+- Overlapping leases
+- Early termination
+priority_hints:
+  P1:
+  - payments
+  - permission
+privacy_blur: false

@@ -18,7 +18,7 @@ import os
 import shutil
 import tempfile
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -33,6 +33,7 @@ from app.storage import migrations
 from app.storage.schemas import Document, Project, ProjectIndex, Run, RunSummary, utcnow
 
 T = TypeVar("T", bound=BaseModel)
+R = TypeVar("R")
 
 _thread_locks: dict[str, threading.RLock] = {}
 _file_locks: dict[str, FileLock] = {}
@@ -248,6 +249,16 @@ class Repository:
 
     def load_run_doc(self, run: Run, relative: str, cls: type[T]) -> T:
         return self.load_model(self.run_path(run, relative), cls)
+
+    def update_run_doc(self, run: Run, relative: str, cls: type[T], change: Callable[[T], R]) -> R:
+        """Load, change and save a run document under its lock, so concurrent edits (UI review + regeneration)
+        never overwrite each other. Returns whatever `change` returns."""
+        path = self.run_path(run, relative)
+        with self.lock(path):
+            doc = self.load_model(path, cls)
+            result = change(doc)
+            self.save_model(path, doc)
+            return result
 
     def has_run_doc(self, run: Run, relative: str) -> bool:
         return self.run_path(run, relative).exists()

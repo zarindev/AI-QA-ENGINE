@@ -354,33 +354,50 @@ class WorkflowStep(Model):
     state_after: str = ""
 
 
+class Transition(Model):
+    from_state: str
+    to_state: str
+    action: str = ""
+    allowed: bool = True  # False = a transition the app must refuse (e.g. cancelled -> completed)
+    role: str = ""
+
+
 class Workflow(Model):
-    id: str
+    id: str  # WF-01
     name: str
     entity: str = ""
+    description: str = ""
     roles: list[str] = Field(default_factory=list)
     steps: list[WorkflowStep] = Field(default_factory=list)
     states: list[str] = Field(default_factory=list)
-    transitions: list[dict[str, str]] = Field(default_factory=list)  # {from, to, action, allowed}
+    transitions: list[Transition] = Field(default_factory=list)
 
 
 RuleStatus = Literal["proposed", "confirmed", "edited", "rejected"]
 
 
+RuleCategory = Literal[
+    "calculation", "validation", "permission", "state", "data_integrity", "scheduling", "other"
+]
+
+
 class BusinessRule(Model):
-    id: str
+    id: str  # BR-001
     statement: str
     condition: str = ""  # testable formula or condition
+    category: RuleCategory = "other"
     entity: str = ""
-    source: str = ""
+    source: str = ""  # where the rule was seen or why it is assumed (page, help text, domain knowledge)
     confidence: float = 0.5
     status: RuleStatus = "proposed"
+    notes: str = ""
 
 
 class UserStory(Model):
-    id: str
+    id: str  # US-001
     role: str
     feature: str = ""
+    module: str = ""
     story: str  # As a <role>, I want ..., so that ...
     acceptance_criteria: list[str] = Field(default_factory=list)
     status: RuleStatus = "proposed"
@@ -396,6 +413,8 @@ class PermissionCell(Model):
 
 
 class RequirementsDoc(Document):
+    method: Literal["ai", "heuristic"] = "ai"
+    generated_at: datetime = Field(default_factory=utcnow)
     stories: list[UserStory] = Field(default_factory=list)
     workflows: list[Workflow] = Field(default_factory=list)
     rules: list[BusinessRule] = Field(default_factory=list)
@@ -447,13 +466,18 @@ class TestCase(Model):
     test_data: dict[str, Any] = Field(default_factory=dict)
     steps: list[TestStep] = Field(default_factory=list)
     expected_result: str = ""
-    links: dict[str, list[str]] = Field(default_factory=dict)  # {"requirements": [...], "stories": [...]}
+    # traceability: {"stories": ["US-003"], "rules": ["BR-002"], "workflows": ["WF-01"], "pages": ["/patients"]}
+    links: dict[str, list[str]] = Field(default_factory=dict)
     status: Literal["draft", "approved", "skipped"] = "draft"
-    source: Literal["generated", "user", "plain_english"] = "generated"
+    source: Literal["generated", "ai", "user", "plain_english"] = "generated"
+    requires_full_mode: bool = False  # creates/changes data, so Safe Mode runs report it as blocked
+    viewports: list[str] = Field(default_factory=lambda: ["desktop"])
+    edited: bool = False  # a person changed it; regeneration keeps it
 
 
 class TestSuite(Document):
-    __test__ = False  # not a pytest class
+    __test__ = False
+    generated_at: datetime = Field(default_factory=utcnow)
     cases: list[TestCase] = Field(default_factory=list)
 
 

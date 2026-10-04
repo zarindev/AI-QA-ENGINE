@@ -76,6 +76,8 @@ def get_run(slug: str, run_id: str) -> dict[str, Any]:
             ("profile", PROFILE_FILE),
             ("model", MODEL_FILE),
             ("report", REPORT_FILE),
+            ("requirements", "requirements.json"),
+            ("testcases", "testcases.json"),
         )
     }
     return data

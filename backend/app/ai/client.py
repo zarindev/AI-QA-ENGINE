@@ -287,7 +287,10 @@ class AIClient:
                 return schema.model_validate(hit)
 
         log.info("AI %s: calling %s", purpose or schema.__name__, self.model)
-        response = self._send(self.client.beta.messages.parse, kwargs)
+        # The SDK refuses non-streaming requests that could take over 10 minutes (~21k max_tokens);
+        # large outputs (requirements, test suites) stream and are parsed from the final message.
+        call = self._stream_parse if kwargs["max_tokens"] > 16000 else self.client.beta.messages.parse
+        response = self._send(call, kwargs)
         parsed = getattr(response, "parsed_output", None)
         if parsed is None:
             raise AIResponseError(
@@ -295,6 +298,10 @@ class AIClient:
             )
         self._cache_put(key, parsed.model_dump(mode="json"))
         return parsed
+
+    def _stream_parse(self, **kwargs: Any) -> Any:
+        with self.client.beta.messages.stream(**kwargs) as stream:
+            return stream.get_final_message()
 
     def messages(
         self,

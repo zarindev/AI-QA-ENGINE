@@ -9,8 +9,8 @@ an update here, and a commit (`feat(phase-N): ...`).
 |---|---|---|
 | 1. Foundation + Explore | Scaffold, config, file storage layer + tests, Claude client, Chrome driver + CDP logs, DOM snapshot, locators, login (credentials / manual session), crawler (public + per role + SPA click discovery), automatic checks, run state, CLI, basic HTML report | **Done** |
 | 2. Understand + Site Model | Classifier, Domain Packs, model builder (NetworkX), FastAPI + React shell, SSE, job executor, onboarding, Site Profile + Site Model screens, setup/start scripts, committed static build, **3 demo apps** | **Done** |
-| 3. Requirements + Test Design | Stories, workflows, rules + confirm flow, generator, test data, review UI, requirements PDF, Excel test cases, Gherkin | Next |
-| 4. Execute + Verify | Agent loop, actions, recorder, replayer, self-healing, judge, re-runs, severity, dedupe, clips, annotated screenshots, Live Run Viewer, Results + Bugs | — |
+| 3. Requirements + Test Design | Stories, workflows, rules + confirm flow, generator, test data, review UI, requirements PDF, Excel test cases, Gherkin | **Done** |
+| 4. Execute + Verify | Agent loop, actions, recorder, replayer, self-healing, judge, re-runs, severity, dedupe, clips, annotated screenshots, Live Run Viewer, Results + Bugs | Next |
 | 5. Advanced checks | Permission matrix, data integrity, business rules, multi-viewport, axe, quality score, heatmap, regression, Bug Replay, privacy blur | — |
 | 6. Reporting | All exports (Excel, PDFs, CSV, Gherkin, pytest suite, traceability) | — |
 | 7. Public repo polish | README, CONTRIBUTING, SECURITY, TROUBLESHOOTING, CI, templates, fresh-clone test, pre-commit secret check | — |
@@ -101,8 +101,46 @@ in this session. Unit tests cover the request shape, caching, budget and refusal
 Claude also found entities the heuristic missed (Customer, Sale line item), required fields and the insurance
 billing rule. Cost for the three classifications: $0.13 (about 4 cents per site).
 
+## Phase 3 — Requirements + Test Design (done)
+
+**Built**
+- **Requirements** (`app/requirements`): Claude reverse-engineers user stories with acceptance criteria, workflows as
+  ordered steps + state machines (allowed *and* must-be-refused transitions) and business rules with a testable
+  condition, category, source and confidence, reading the site profile, every screen and the full text of help /
+  terms pages. Offline fallback derives stories from entities, states from status dropdowns and rules from form
+  attributes + the domain pack. Rules start `proposed`; only confirmed (or edited) rules drive business-rule tests.
+- **Test design** (`app/testdesign`): rules-based generator from what the crawl saw (smoke per role, required
+  fields, boundary values and equivalence classes from HTML constraints and field types, CRUD create, direct-URL
+  permission checks per role, signed-out access, responsive, accessibility) + Claude for e2e workflows, state
+  transitions, business rules (with computed expected values), data integrity, domain negatives and data-level
+  permissions. Ids `TC-<MOD>-NNN`, priorities P1–P4, traceability links, `requires_full_mode` flag. Regeneration
+  keeps approved, edited and hand-written cases. Plain-English authoring. Cost/time estimate.
+- **Test data**: Faker, deterministic, `QAP_` names, `@example.test` emails, 555-01xx phones; boundary probes and
+  invalid classes. No personal data in titles (record pages are named from the URL).
+- **Exports**: Reverse-Engineered Requirements Document (Markdown + PDF printed by Chrome), Excel workbook (Test
+  Cases, User Stories, Business Rules, About — styled, filters, frozen headers), Gherkin `.feature` files (zip).
+- **API + UI**: Requirements screen (rules Confirm / Edit / Reject, bulk-confirm ≥ 80 %, stories, workflow state
+  diagrams), Test Cases screen (filters, grouped table, bulk approve/skip, side-panel editor with steps, plain
+  English, regenerate, estimate, exports).
+- Claude client streams large structured responses (SDK refuses non-streaming requests above ~21k tokens).
+
+**Verified on the demo apps with Claude (Full Mode, test environment, 2026-10-05)**
+
+| App | Stories / workflows / rules | Rules confirmed (≥ 80 %) | Approved cases | AI cost (explore → design + regenerate) |
+|---|---|---|---|---|
+| CarePoint Clinic | 11 / 4 / 27 | 19 | 71 | $0.38 |
+| DriveNow Rentals | 12 / 3 / 25 | 16 | 60 | $0.33 |
+| StockRoom POS | 14 / 3 / 28 | 20 | 63 | $0.35 |
+
+Without seeing the manifests, Claude proposed rules matching most planted clinic bugs (double booking,
+insurance billing, admin-only reports and doctors, phone format, future birth date, inactive doctors, cancelled
+visits). The suites were bulk-approved through the API to meet the phase goal; a person would normally review
+them first. Estimated cost to *execute* all approved cases: $4–6 per app (Phase 4).
+
+**Tests:** 91 Python tests (incl. review API flow, Excel/Gherkin/PDF exports), 4 Vitest tests.
+
 ## How to resume
 
 ```
-Continue QA_PILOT_BUILD_PROMPT.md from Phase 3. Check git log and docs/PROGRESS.md for what's done.
+Continue QA_PILOT_BUILD_PROMPT.md from Phase 4. Check git log and docs/PROGRESS.md for what's done.
 ```

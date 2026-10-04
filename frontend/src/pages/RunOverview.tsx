@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import {
-  AlertTriangle, Brain, Coins, ExternalLink, FileText, Image as ImageIcon, Loader2, Network, Radio, RotateCcw, ShieldBan, Square,
+  AlertTriangle, Brain, Coins, ListChecks, ExternalLink, FileText, Image as ImageIcon, Loader2, Network, Radio, RotateCcw, ShieldBan, Square,
 } from "lucide-react";
 import { api, fileUrl, type Run } from "@/lib/api";
 import { DOMAIN_LABELS, duration, pct } from "@/lib/utils";
@@ -50,6 +50,8 @@ export function RunOverview() {
           <>
             {done.profile && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/profile`}><Brain /> Site profile</Link></Button>}
             {done.model && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/model`}><Network /> Site model</Link></Button>}
+            {done.requirements && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/requirements`}><FileText /> Requirements</Link></Button>}
+            {done.testcases && <Button asChild><Link to={`/projects/${slug}/runs/${runId}/tests`}><ListChecks /> Review test cases</Link></Button>}
             {done.report && <Button variant="ghost" asChild><a href={fileUrl(slug, runId, "exports/crawl_report.html")} target="_blank" rel="noreferrer"><FileText /> HTML report</a></Button>}
             {live && <Button variant="danger" onClick={() => cancel.mutate()}><Square /> Stop</Button>}
             {["interrupted", "failed", "cancelled"].includes(r.status) && <Button onClick={() => resume.mutate()} disabled={resume.isPending}><RotateCcw /> Resume</Button>}

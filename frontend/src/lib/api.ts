@@ -151,6 +151,94 @@ export interface FlowGraph {
   stats: Record<string, number>;
 }
 
+export type ReviewStatus = "proposed" | "confirmed" | "edited" | "rejected";
+
+export interface BusinessRule {
+  id: string;
+  statement: string;
+  condition: string;
+  category: string;
+  entity: string;
+  source: string;
+  confidence: number;
+  status: ReviewStatus;
+  notes: string;
+}
+
+export interface UserStory {
+  id: string;
+  role: string;
+  feature: string;
+  module: string;
+  story: string;
+  acceptance_criteria: string[];
+  status: ReviewStatus;
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  entity: string;
+  description: string;
+  roles: string[];
+  steps: { order: number; action: string; role: string; page: string; state_after: string }[];
+  states: string[];
+  transitions: { from_state: string; to_state: string; action: string; allowed: boolean; role: string }[];
+}
+
+export interface Requirements {
+  method: "ai" | "heuristic";
+  stories: UserStory[];
+  workflows: Workflow[];
+  rules: BusinessRule[];
+}
+
+export interface TestStep {
+  order: number;
+  action: string;
+  data: string;
+  expected: string;
+}
+
+export interface TestCase {
+  id: string;
+  title: string;
+  module: string;
+  technique: string;
+  type: string;
+  priority: "P1" | "P2" | "P3" | "P4";
+  role: string;
+  preconditions: string[];
+  test_data: Record<string, unknown>;
+  steps: TestStep[];
+  expected_result: string;
+  links: Record<string, string[]>;
+  status: "draft" | "approved" | "skipped";
+  source: "generated" | "ai" | "user" | "plain_english";
+  requires_full_mode: boolean;
+  viewports: string[];
+  edited: boolean;
+}
+
+export interface Estimate {
+  cases: number;
+  steps: number;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  minutes: number;
+  blocked_in_safe_mode: number;
+  model: string;
+  mode: "safe" | "full";
+}
+
+export interface ExportFile {
+  kind: string;
+  path: string;
+  size: number;
+  modified: number;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -209,6 +297,27 @@ export const api = {
   profile: (slug: string, id: string) => request<SiteProfile>(`/api/projects/${slug}/runs/${id}/profile`),
   model: (slug: string, id: string, kinds: string[]) =>
     request<FlowGraph>(`/api/projects/${slug}/runs/${id}/model?kinds=${kinds.join(",")}`),
+  requirements: (slug: string, id: string) => request<Requirements>(`/api/projects/${slug}/runs/${id}/requirements`),
+  updateRule: (slug: string, id: string, ruleId: string, body: Partial<Pick<BusinessRule, "status" | "statement" | "condition" | "notes">>) =>
+    request<BusinessRule>(`/api/projects/${slug}/runs/${id}/requirements/rules/${ruleId}`, { method: "PATCH", body: JSON.stringify(body) }),
+  bulkRules: (slug: string, id: string, ids: string[], status: "confirmed" | "rejected" | "proposed") =>
+    request<{ updated: number }>(`/api/projects/${slug}/runs/${id}/requirements/rules/bulk`, { method: "POST", body: JSON.stringify({ ids, status }) }),
+  testcases: (slug: string, id: string) => request<{ cases: TestCase[] }>(`/api/projects/${slug}/runs/${id}/testcases`),
+  updateCase: (slug: string, id: string, caseId: string, body: Record<string, unknown>) =>
+    request<TestCase>(`/api/projects/${slug}/runs/${id}/testcases/${caseId}`, { method: "PATCH", body: JSON.stringify(body) }),
+  bulkCases: (slug: string, id: string, ids: string[], status: TestCase["status"]) =>
+    request<{ updated: number }>(`/api/projects/${slug}/runs/${id}/testcases/bulk`, { method: "POST", body: JSON.stringify({ ids, status }) }),
+  deleteCase: (slug: string, id: string, caseId: string) =>
+    request<void>(`/api/projects/${slug}/runs/${id}/testcases/${caseId}`, { method: "DELETE" }),
+  plainEnglish: (slug: string, id: string, text: string, role = "") =>
+    request<TestCase>(`/api/projects/${slug}/runs/${id}/testcases/plain-english`, { method: "POST", body: JSON.stringify({ text, role }) }),
+  regenerate: (slug: string, id: string) =>
+    request<{ status: string }>(`/api/projects/${slug}/runs/${id}/testcases/regenerate`, { method: "POST" }),
+  estimate: (slug: string, id: string, status = "approved") =>
+    request<Estimate>(`/api/projects/${slug}/runs/${id}/testcases/estimate?status=${status}`),
+  exports: (slug: string, id: string) => request<ExportFile[]>(`/api/projects/${slug}/runs/${id}/exports`),
+  createExport: (slug: string, id: string, kind: "requirements" | "testcases_xlsx" | "gherkin_zip") =>
+    request<{ files: string[] }>(`/api/projects/${slug}/runs/${id}/exports/${kind}`, { method: "POST" }),
   startDemo: () => request<{ project: string; run: string }>("/api/demo/start", { method: "POST" }),
 };
 

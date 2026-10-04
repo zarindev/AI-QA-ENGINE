@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ project.name }} — Requirements</title>
+<style>
+  @page { size: A4; margin: 14mm 12mm; }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.5 "Inter", "Segoe UI", -apple-system, Helvetica, Arial, sans-serif; color: #0f172a; margin: 0; }
+  code { font-family: "JetBrains Mono", Consolas, monospace; font-size: 8.8pt; background: #f1f5f9; padding: 0 3px; border-radius: 3px; }
+  h1 { font-size: 24pt; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 14pt; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #2563eb; break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 14px 0 6px; break-after: avoid; }
+  p { margin: 4px 0 8px; }
+  .muted { color: #64748b; }
+  .cover { background: linear-gradient(135deg, #0a0f1c, #1e3a8a); color: #fff; border-radius: 14px; padding: 28px 30px; margin-bottom: 18px; }
+  .cover .muted { color: #bfdbfe; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-bottom: 26px; }
+  .logo { width: 28px; height: 28px; border-radius: 8px; background: #2563eb; display: grid; place-items: center; font-weight: 700; }
+  .kpis { display: flex; gap: 10px; margin-top: 18px; }
+  .kpi { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 12px; min-width: 90px; }
+  .kpi b { display: block; font-size: 16pt; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 9.2pt; break-inside: auto; }
+  th, td { border-bottom: 1px solid #e2e8f0; padding: 5px 6px; text-align: left; vertical-align: top; }
+  th { background: #f8fafc; color: #475569; font-size: 8.3pt; text-transform: uppercase; letter-spacing: .04em; }
+  tr { break-inside: avoid; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 8pt; font-weight: 600; white-space: nowrap; }
+  .confirmed, .edited { background: #dcfce7; color: #166534; } .proposed { background: #fef3c7; color: #92400e; }
+  .no { color: #b91c1c; font-weight: 600; }
+  .story { margin: 6px 0 8px; break-inside: avoid; }
+  .story ul { margin: 2px 0 0 18px; padding: 0; color: #334155; }
+  .states { margin: 4px 0; }
+  .state { display: inline-block; border: 1px solid #93c5fd; background: #eff6ff; border-radius: 6px; padding: 1px 7px; font-size: 9pt; }
+  .arrow { color: #64748b; margin: 0 3px; }
+  footer { margin-top: 24px; color: #94a3b8; font-size: 8pt; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="brand"><div class="logo">Q</div> QA Pilot</div>
+  <div class="muted">Reverse-engineered requirements</div>
+  <h1>{{ project.name }}</h1>
+  <div class="muted">{{ project.url }} · run {{ run.id }} · {{ generated.strftime('%d %B %Y') }}</div>
+  <div class="kpis">
+    <div class="kpi"><b>{{ profile.roles|length }}</b>roles</div>
+    <div class="kpi"><b>{{ profile.entities|length }}</b>entities</div>
+    <div class="kpi"><b>{{ req.stories|length }}</b>user stories</div>
+    <div class="kpi"><b>{{ req.workflows|length }}</b>workflows</div>
+    <div class="kpi"><b>{{ rules|length }}</b>business rules</div>
+  </div>
+</div>
+
+<h2>1. Overview</h2>
+<p><b>{{ profile.domain|capitalize }}</b> · {{ profile.sub_type }}
+  <span class="muted">(confidence {{ '%.0f'|format(profile.confidence * 100) }}%, {{ 'Claude analysis' if profile.method == 'ai' else 'offline heuristic' }})</span></p>
+<p>{{ profile.summary }}</p>
+<table>
+  <tr><th style="width:22%">Role</th><th>What it does</th></tr>
+  {% for r in profile.role_details %}<tr><td><b>{{ r.name }}</b></td><td>{{ r.description or '—' }}</td></tr>{% endfor %}
+</table>
+<p><b>Modules:</b> {{ profile.modules|join(', ') }}</p>
+
+<h2>2. Data model</h2>
+{% for e in profile.entities %}
+<h3>{{ e.name }}{% if e.relations %} <span class="muted" style="font-weight:400">— related to {{ e.relations|join(', ') }}</span>{% endif %}</h3>
+<table>
+  <tr><th style="width:28%">Field</th><th style="width:14%">Type</th><th style="width:10%">Required</th><th>Rules</th></tr>
+  {% for f in e.fields %}<tr><td>{{ f.name }}</td><td><code>{{ f.type }}</code></td><td>{{ 'yes' if f.required else '' }}</td><td>{{ f.validation }}</td></tr>{% endfor %}
+</table>
+{% endfor %}
+
+<h2>3. User stories</h2>
+{% for role, stories in stories_by_role.items() %}
+<h3>{{ role|capitalize }}</h3>
+{% for s in stories %}
+<div class="story"><b>{{ s.id }}</b> {{ s.story }}
+  {% if s.acceptance_criteria %}<ul>{% for ac in s.acceptance_criteria %}<li>{{ ac }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endfor %}
+{% endfor %}
+
+<h2>4. Workflows</h2>
+{% for w in req.workflows %}
+<h3>{{ w.id }} {{ w.name }}</h3>
+{% if w.description %}<p>{{ w.description }}</p>{% endif %}
+{% if w.states %}<div class="states">{% for s in w.states %}<span class="state">{{ s }}</span>{% if not loop.last %}<span class="arrow">→</span>{% endif %}{% endfor %}</div>{% endif %}
+{% if w.steps %}<ol>{% for st in w.steps %}<li>{{ st.action }}{% if st.role %} <span class="muted">({{ st.role }})</span>{% endif %}</li>{% endfor %}</ol>{% endif %}
+{% if w.transitions %}
+<table>
+  <tr><th>From</th><th>To</th><th>Action</th><th>Allowed</th></tr>
+  {% for t in w.transitions %}<tr><td>{{ t.from_state }}</td><td>{{ t.to_state }}</td><td>{{ t.action }}</td><td>{% if t.allowed %}yes{% else %}<span class="no">no — must be refused</span>{% endif %}</td></tr>{% endfor %}
+</table>
+{% endif %}
+{% endfor %}
+
+<h2>5. Business rules <span class="muted" style="font-weight:400">({{ confirmed }} confirmed of {{ rules|length }})</span></h2>
+<table>
+  <tr><th style="width:8%">ID</th><th style="width:29%">Rule</th><th style="width:25%">Condition</th><th>Source</th><th style="width:8%">Conf.</th><th style="width:11%">Status</th></tr>
+  {% for r in rules %}
+  <tr><td style="white-space:nowrap">{{ r.id }}</td><td>{{ r.statement }}<div class="muted">{{ r.category }}{% if r.entity %} · {{ r.entity }}{% endif %}</div></td>
+      <td>{% if r.condition %}<code>{{ r.condition }}</code>{% endif %}</td><td class="muted">{{ r.source }}</td>
+      <td>{{ '%.0f'|format(r.confidence * 100) }}%</td><td><span class="pill {{ r.status }}">{{ status_label[r.status] }}</span></td></tr>
+  {% endfor %}
+</table>
+
+<footer>Generated by QA Pilot {{ version }}. Requirements were inferred from the running application and must be
+reviewed; "proposed" rules have not been confirmed by a person.</footer>
+</body>
+</html>

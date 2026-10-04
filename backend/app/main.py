@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__
-from app.api import demo, projects, runs, settings
+from app.api import demo, projects, review, runs, settings
 from app.api.deps import executor, repo
 from app.core.logging import get_logger, setup_logging
 from app.core.paths import STATIC_DIR
@@ -41,7 +41,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-for router in (settings.router, projects.router, runs.router, demo.router):
+for router in (settings.router, projects.router, runs.router, review.router, demo.router):
     app.include_router(router)
 
 

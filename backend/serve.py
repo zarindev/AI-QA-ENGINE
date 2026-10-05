@@ -11,6 +11,7 @@ import socket
 import sys
 import threading
 import time
+import urllib.request
 import webbrowser
 from pathlib import Path
 
@@ -56,7 +57,15 @@ def main() -> None:
     if not args.no_browser:
 
         def open_browser() -> None:
-            time.sleep(1.5)
+            # Open the browser only once the server answers; opening it on a fixed timer showed
+            # "This site can't be reached" whenever the first start took longer than expected.
+            deadline = time.monotonic() + 60
+            while time.monotonic() < deadline:
+                try:
+                    with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/health", timeout=2):
+                        break
+                except OSError:
+                    time.sleep(0.5)
             webbrowser.open(url)
 
         threading.Thread(target=open_browser, daemon=True).start()

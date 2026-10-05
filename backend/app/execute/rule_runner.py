@@ -19,7 +19,7 @@ from app.browser import auth
 from app.browser.dom_snapshot import take_snapshot
 from app.browser.driver import BrowserSession, NavigationResult
 from app.execute.recorder import Recorder
-from app.execute.runner import LoginFailed, RunContext, open_session, resolve_role
+from app.execute.runner import VIEWPORTS, LoginFailed, RunContext, open_session, resolve_role
 from app.explore import urls
 from app.explore.checks import _ERROR_PAGE_PATTERNS
 from app.storage.schemas import Execution, ResultKind, StepResult, TestCase, utcnow
@@ -28,7 +28,6 @@ RULE_TECHNIQUES = ("smoke", "permission", "ui_responsive", "accessibility")
 AXE_JS = (Path(axe_selenium_python.__file__).parent / "node_modules" / "axe-core" / "axe.min.js").read_text(
     encoding="utf-8"
 )
-VIEWPORTS = {"tablet": (768, 1024), "mobile": (390, 844), "desktop": (1440, 900)}
 _DENIED = re.compile(
     r"\b(403|forbidden|not authori[sz]ed|unauthori[sz]ed|access denied|permission|"
     r"not allowed|no access|sign in|log in)\b",
@@ -68,7 +67,7 @@ def run_rule_case(ctx: RunContext, case: TestCase, attempt: int) -> Execution:
             "accessibility": _a11y,
         }[case.technique]
         runner(ctx, session, recorder, case, steps, viewports)
-        files = recorder.finish(f"{case.id} · {case.title}")
+        files = recorder.finish(f"{case.id} · {case.title}", blur=ctx.privacy)
     finally:
         session.close()
     failed = [s for s in steps if s.result == "fail"]

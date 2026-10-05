@@ -4,10 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Ban, Check, CheckCheck, Coins, FileDown, FileSpreadsheet, ListChecks, Loader2, MessageSquarePlus, Play, Plus, RefreshCw,
-  Save, Search, ShieldAlert, ShieldCheck, Timer, Trash2, X,
+  Monitor, Save, Search, ShieldAlert, ShieldCheck, Smartphone, Tablet, Timer, Trash2, X,
 } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { api, fileUrl, type TestCase } from "@/lib/api";
+import { api, fileUrl, type TestCase, type Viewport } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ export function TestCases() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState<TestCase | null>(null);
   const [addOpen, setAddOpen] = useState(false);
+  const [viewports, setViewports] = useState<Viewport[]>(["desktop"]);
   const regenerating = !!runQ.data?.running;
 
   const refresh = () => {
@@ -51,7 +53,7 @@ export function TestCases() {
   });
   const navigate = useNavigate();
   const run = useMutation({
-    mutationFn: () => api.execute(slug, runId),
+    mutationFn: () => api.execute(slug, runId, undefined, viewports),
     onSuccess: (r) => { toast.success(`Running ${r.cases} tests (${r.agent_cases} with the AI agent)`); navigate(`/projects/${slug}/runs/${runId}`); },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -113,7 +115,8 @@ export function TestCases() {
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="secondary" onClick={() => exp.mutate("testcases_xlsx")} disabled={exp.isPending}><FileSpreadsheet /> Excel</Button>
           <Button variant="secondary" onClick={() => exp.mutate("gherkin_zip")} disabled={exp.isPending || counts.approved === 0}><FileDown /> Gherkin</Button>
-          <Button onClick={() => run.mutate()} disabled={counts.approved === 0 || regenerating || run.isPending}>
+          <ViewportPicker value={viewports} onChange={setViewports} />
+          <Button onClick={() => run.mutate()} disabled={counts.approved === 0 || regenerating || run.isPending || viewports.length === 0}>
             {run.isPending ? <Loader2 className="animate-spin" /> : <Play />} Run approved tests
           </Button>
         </div>
@@ -295,5 +298,29 @@ function AddDialog({ slug, runId, open, onOpenChange, onAdded }: { slug: string;
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+const VIEWPORT_OPTS: { key: Viewport; label: string; icon: typeof Monitor }[] = [
+  { key: "desktop", label: "Desktop 1440", icon: Monitor },
+  { key: "tablet", label: "Tablet 768", icon: Tablet },
+  { key: "mobile", label: "Phone 390", icon: Smartphone },
+];
+
+/** Multi-viewport runs: each chosen size runs every approved test again and reports it separately (TC-…@mobile). */
+function ViewportPicker({ value, onChange }: { value: Viewport[]; onChange: (v: Viewport[]) => void }) {
+  return (
+    <div role="group" aria-label="Viewports to run" className="flex rounded-lg border border-line p-0.5">
+      {VIEWPORT_OPTS.map(({ key, label, icon: Icon }) => {
+        const on = value.includes(key);
+        return (
+          <button key={key} type="button" title={`${on ? "Don't run" : "Also run"} at ${label}px`} aria-pressed={on}
+            onClick={() => onChange(on ? value.filter((v) => v !== key) : [...value, key])}
+            className={cn("rounded-md px-2 py-1.5 text-muted transition", on ? "bg-primary-soft text-fg" : "hover:text-fg")}>
+            <Icon className="size-4" /><span className="sr-only">{label}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import {
-  AlertTriangle, Brain, Bug as BugIcon, ClipboardList, Coins, ListChecks, ExternalLink, FileText, Image as ImageIcon, Loader2, Network, Radio, RotateCcw, ShieldBan, Square,
+  AlertTriangle, Brain, Bug as BugIcon, ClipboardList, Coins, Gauge, ListChecks, ExternalLink, FileText, Image as ImageIcon, Loader2, Network, Radio, RotateCcw, ShieldBan, Square,
 } from "lucide-react";
 import { api, fileUrl, type Run } from "@/lib/api";
 import { DOMAIN_LABELS, duration, pct } from "@/lib/utils";
@@ -53,6 +53,7 @@ export function RunOverview() {
             {done.requirements && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/requirements`}><FileText /> Requirements</Link></Button>}
             {done.bugs && <Button asChild><Link to={`/projects/${slug}/runs/${runId}/bugs`}><BugIcon /> Bugs</Link></Button>}
             {done.results && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/results`}><ClipboardList /> Results</Link></Button>}
+            {done.results && <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/quality`}><Gauge /> Quality</Link></Button>}
             {done.testcases && <Button variant={done.results ? "secondary" : "primary"} asChild><Link to={`/projects/${slug}/runs/${runId}/tests`}><ListChecks /> Review test cases</Link></Button>}
             {done.report && <Button variant="ghost" asChild><a href={fileUrl(slug, runId, "exports/crawl_report.html")} target="_blank" rel="noreferrer"><FileText /> HTML report</a></Button>}
             {live && <Button variant="danger" onClick={() => cancel.mutate()}><Square /> Stop</Button>}

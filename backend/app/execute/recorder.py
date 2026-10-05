@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from app.browser.driver import BrowserSession
-from app.execute import media
+from app.execute import media, privacy
 from app.explore.checks import _same_site
 from app.storage.repository import Repository
 from app.storage.schemas import AutoFinding, ConsoleEntry, NetworkEvent, Run, StepResult
@@ -37,7 +37,11 @@ class Recorder:
         """Screenshot after a step (also the 'before' of the next step), plus the logs produced by the step."""
         png = self.session.screenshot_png()
         rel = f"{self.base}/step-{step:02d}.jpg"
-        self.repo.write_bytes(self.repo.run_path(self.run, rel), media.to_jpeg(png))
+        path = self.repo.run_path(self.run, rel)
+        self.repo.write_bytes(path, media.to_jpeg(png))
+        rects = privacy.pii_rects(self.session.driver)
+        if rects:
+            self.repo.write_text(privacy.sidecar(path), json.dumps(rects))
         self.last_shot, self.last_png = rel, png
         self._drain(step)
         return png
@@ -80,7 +84,7 @@ class Recorder:
                     )
                 )
 
-    def finish(self, title: str) -> dict[str, str]:
+    def finish(self, title: str, blur: bool = False) -> dict[str, str]:
         """Write logs and the test video; returns the relative paths."""
         out: dict[str, str] = {}
         logs = {
@@ -95,7 +99,10 @@ class Recorder:
         if frames:
             frames.insert(0, (frames[0][0], title[:150]))
             video = media.build_video(
-                frames, self.repo.run_path(self.run, f"{self.base}/video.mp4"), seconds_per_frame=1.5
+                frames,
+                self.repo.run_path(self.run, f"{self.base}/video.mp4"),
+                seconds_per_frame=1.5,
+                load=privacy.blurred_bytes if blur else None,
             )
             if video:
                 out["video"] = f"{self.base}/video.mp4"

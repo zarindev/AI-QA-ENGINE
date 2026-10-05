@@ -115,6 +115,23 @@ def get_project(slug: str) -> dict[str, Any]:
     return project_card(get_project_or_404(slug))
 
 
+class ProjectPatch(BaseModel):
+    privacy_blur: Literal["auto", "on", "off"] | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=80)
+
+
+@router.patch("/{slug}")
+def update_project(slug: str, body: ProjectPatch) -> dict[str, Any]:
+    """Project settings that are safe to change after creation (privacy blur: Auto / On / Off)."""
+    project = get_project_or_404(slug)
+    if body.privacy_blur is not None:
+        project.privacy_blur = {"auto": None, "on": True, "off": False}[body.privacy_blur]
+    if body.name:
+        project.name = body.name
+    repo().save_project(project)
+    return project_card(project)
+
+
 @router.delete("/{slug}", status_code=204)
 def delete_project(slug: str) -> None:
     get_project_or_404(slug)

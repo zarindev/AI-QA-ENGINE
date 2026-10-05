@@ -22,7 +22,7 @@ from typing import Any, Literal
 from pydantic import BaseModel
 
 from app.core.logging import get_logger
-from app.execute import media
+from app.execute import media, privacy
 from app.explore import urls
 from app.storage.repository import Repository
 from app.storage.schemas import (
@@ -70,6 +70,7 @@ class BugDraft:
     frames: list[tuple[str, str]] = field(default_factory=list)
     failure_shot: str = ""
     rect: dict[str, float] | None = None
+    viewport_width: int = 0  # CSS width the failure screenshot was taken at (0 = run default)
 
 
 class AIBugReport(BaseModel):
@@ -119,11 +120,18 @@ def _steps_text(execution: Execution, limit: int = 30) -> str:
     return "\n".join(out)
 
 
+def _viewport_label(name: str) -> str:
+    from app.execute.runner import VIEWPORTS
+
+    w, h = VIEWPORTS.get(name or "desktop", VIEWPORTS["desktop"])
+    return f"{w}×{h} ({name or 'desktop'})"
+
+
 def environment(execution: Execution, run: Run, url: str) -> BugEnvironment:
     return BugEnvironment(
         browser=run.options.get("browser", "Chrome"),
         os=f"{platform.system()} {platform.release()}",
-        viewport=execution.viewport if execution.viewport != "desktop" else "1440×900 (desktop)",
+        viewport=_viewport_label(execution.viewport),
         url=url,
         role=execution.role or "signed out",
         date_time=(execution.finished_at or execution.started_at).strftime("%Y-%m-%d %H:%M UTC"),
@@ -227,7 +235,10 @@ def agent_bug(ai: Any, f: Failure, run: Run) -> BugDraft:
     bug.video = ex.video
     bug.console = [a.detail for a in ex.auto_findings if a.check == "js_error"][:5]
     bug.network = [a.detail for a in ex.auto_findings if a.check == "server_error"][:5]
-    return BugDraft(bug, frames, shot, rect)
+    from app.execute.runner import VIEWPORTS
+
+    width = VIEWPORTS.get(ex.viewport or "desktop", VIEWPORTS["desktop"])[0]
+    return BugDraft(bug, frames, shot, rect, viewport_width=width)
 
 
 # ---------------------------------------------------------------- rule-runner failures (grouped, templated)
@@ -503,7 +514,9 @@ def _merge(keeper: BugDraft, other: BugDraft) -> None:
 # ---------------------------------------------------------------- evidence + final assembly
 
 
-def finalize(repo: Repository, run: Run, drafts: list[BugDraft], viewport_width: int = 1440) -> list[Bug]:
+def finalize(
+    repo: Repository, run: Run, drafts: list[BugDraft], viewport_width: int = 1440, blur: bool = False
+) -> list[Bug]:
     drafts.sort(key=lambda d: (SEVERITY_ORDER[d.bug.severity], d.bug.priority, d.bug.title))
     bugs = []
     for i, d in enumerate(drafts, 1):
@@ -515,15 +528,19 @@ def finalize(repo: Repository, run: Run, drafts: list[BugDraft], viewport_width:
                 f"{bug.id}: expected {textwrap.shorten(bug.expected, 90, placeholder='…')} — "
                 f"actual {textwrap.shorten(bug.actual, 110, placeholder='…')}"
             )
-            png = media.annotate(
-                repo.run_path(run, d.failure_shot).read_bytes(), d.rect, caption, viewport_width
-            )
+            source = repo.run_path(run, d.failure_shot)
+            width = d.viewport_width or viewport_width
+            raw = privacy.blurred_bytes(source, width) if blur else source.read_bytes()
+            png = media.annotate(raw, d.rect, caption, width)
             rel = f"artifacts/bugs/{bug.id}/annotated.png"
             repo.write_bytes(repo.run_path(run, rel), png)
             bug.annotated_screenshot = rel
             frames = [(repo.run_path(run, p), c) for p, c in d.frames if p]
             clip = media.build_clip(
-                frames, repo.run_path(run, rel), repo.run_path(run, f"artifacts/bugs/{bug.id}/clip.mp4")
+                frames,
+                repo.run_path(run, rel),
+                repo.run_path(run, f"artifacts/bugs/{bug.id}/clip.mp4"),
+                load=privacy.blurred_bytes if blur else None,
             )
             if clip:
                 bug.clip = f"artifacts/bugs/{bug.id}/clip.mp4"

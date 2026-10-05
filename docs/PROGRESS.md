@@ -178,6 +178,17 @@ Agent cost ≈ $0.08–0.15 per test; replay re-runs ≈ $0.03.
 **To finish Phase 4:** add API credits, then resume the three runs (`POST …/execute {"resume": true}`) and record the
 final per-app numbers. Benchmarks for the README come from Phase 8 only.
 
+## Phase 5 — Advanced checks (built)
+
+- **Quality Score** with sub-scores and documented formula (docs/ARCHITECTURE.md), stored per run, shown in the run list.
+- **Coverage heatmap**, **Permission matrix** (holes highlighted, evidence on hover), **Regression comparison**
+  (new / fixed / still open / reappeared vs. any earlier run) — screen *Coverage & quality* and *Permission matrix*.
+- **Business-rule recalculation** in Python (safe AST evaluator) for tests linked to confirmed rules; the result is
+  shown in each attempt.
+- **Privacy blur** (Auto / On / Off per project) for bug screenshots, clips, videos and exports.
+- **Multi-viewport runs** (desktop / tablet / phone picker next to *Run approved tests*).
+- API: `GET …/quality`, `GET …/permissions`, `GET …/compare?base=`, `PATCH /api/projects/{slug}`.
+
 ## How to resume
 
 ```

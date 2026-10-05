@@ -75,7 +75,7 @@ export function Results() {
             {rows.map((r) => (
               <tr key={r.test_case_id} className="cursor-pointer border-t border-line hover:bg-primary-soft/30" onClick={() => setOpen(r)}>
                 <td className="px-4 py-2.5"><Badge tone={RESULT_TONE[r.result]}><ResultIcon r={r.result} className="size-3" />{r.result}</Badge></td>
-                <td className="py-2.5 pr-2"><div className="font-medium">{r.title}</div><div className="font-mono text-[11px] text-faint">{r.test_case_id} · {r.module}</div></td>
+                <td className="py-2.5 pr-2"><div className="font-medium">{r.title}</div><div className="font-mono text-[11px] text-faint">{r.test_case_id} · {r.module}{r.viewport && r.viewport !== "desktop" && <Badge tone="info" className="ml-1.5">{r.viewport}</Badge>}</div></td>
                 <td className="px-2"><Badge tone="primary">{r.technique.replace("_", " ")}</Badge></td>
                 <td className="px-2 text-muted">{r.role || "—"}</td>
                 <td className="px-2 font-mono text-xs">{r.reproducibility ? <span className={r.flaky ? "text-amber-400" : "text-red-400"}>{r.reproducibility}{r.flaky && " flaky"}</span> : "—"}</td>
@@ -131,6 +131,17 @@ function Attempt({ slug, runId, a }: { slug: string; runId: string; a: Execution
         <div><div className="text-xs uppercase tracking-wider text-faint">Actual</div><div className={cn("mt-1", a.result === "fail" && "text-red-300")}>{a.actual || a.reason}</div></div>
         <div className="text-xs text-muted sm:col-span-2">{a.reason} · confidence {pct(a.confidence)} · {METHOD_LABEL[a.method]} · ${a.token_usage.cost_usd.toFixed(3)}</div>
       </Card>
+      {a.rule_checks?.length > 0 && (
+        <Card className="space-y-2 p-4"><div className="text-xs uppercase tracking-wider text-faint">Rule recalculated in Python</div>
+          {a.rule_checks.map((c) => (
+            <div key={c.rule_id} className="text-sm">
+              <Badge tone={c.holds === true ? "pass" : c.holds === false ? "fail" : "neutral"}>{c.rule_id}: {c.holds === true ? "holds" : c.holds === false ? "does not hold" : "not checked"}</Badge>
+              <code className="ml-2 font-mono text-xs text-blue-300">{c.expression}</code>
+              <div className="mt-1 font-mono text-[11px] text-muted">{Object.entries(c.values).map(([k, v]) => `${k}=${v}`).join(" · ")}{c.error && ` — ${c.error}`}</div>
+            </div>
+          ))}
+        </Card>
+      )}
       {a.video && <video controls className="w-full rounded-xl border border-line" src={fileUrl(slug, runId, a.video)}><track kind="captions" /></video>}
       {a.auto_findings.length > 0 && (
         <Card className="p-4"><div className="mb-2 text-xs uppercase tracking-wider text-faint">Noticed while running</div>

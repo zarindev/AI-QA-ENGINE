@@ -17,11 +17,13 @@ from typing import Any
 
 from app.ai.client import AIUnavailable, BudgetExceeded
 from app.core.logging import get_logger
+from app.execute.privacy import privacy_enabled
 from app.execute.replayer import replay_case, script_from
 from app.execute.rule_runner import RULE_TECHNIQUES, run_rule_case
 from app.execute.runner import RunContext, blocked_execution, run_agent_case
 from app.explore.stage import FINDINGS_FILE
 from app.jobs.run_state import RunCancelled, RunTracker
+from app.requirements.stage import REQUIREMENTS_FILE
 from app.storage.repository import Repository
 from app.storage.schemas import (
     BugsDoc,
@@ -29,19 +31,40 @@ from app.storage.schemas import (
     ExecutionsDoc,
     FindingsDoc,
     ReplayScript,
+    RequirementsDoc,
     ResultsDoc,
+    SiteProfile,
     TestCase,
     TestRunResult,
     TestSuite,
     utcnow,
 )
 from app.testdesign.stage import TESTCASES_FILE
+from app.understand.stage import PROFILE_FILE
 from app.verify import bugs as bugbuilder
+from app.verify.rule_check import check_rule
 
 log = get_logger("execute")
 
 RESULTS_FILE = "results.json"
 BUGS_FILE = "bugs.json"
+
+
+def expand_viewports(cases: list[TestCase], viewports: list[str]) -> list[TestCase]:
+    """Multi-viewport runs: every chosen test also runs at tablet / phone size as its own result
+    (`TC-APP-004@mobile`). Responsive and accessibility tests already choose their own sizes."""
+    out: list[TestCase] = []
+    for case in cases:
+        for vp in viewports:
+            if vp == "desktop":
+                out.append(case)
+            elif case.technique not in ("ui_responsive", "accessibility"):
+                out.append(
+                    case.model_copy(
+                        update={"id": f"{case.id}@{vp}", "title": f"{case.title} ({vp})", "viewports": [vp]}
+                    )
+                )
+    return out
 
 
 def _is_rule_case(case: TestCase) -> bool:
@@ -76,10 +99,12 @@ def run_execution(
     ctx: RunContext,
     case_ids: list[str] | None = None,
     resume: bool = False,
+    viewports: list[str] | None = None,
 ) -> ResultsDoc:
     run = tracker.run
     suite = repo.load_run_doc(run, TESTCASES_FILE, TestSuite)
     cases = [c for c in suite.cases if (c.id in case_ids if case_ids else c.status == "approved")]
+    cases = expand_viewports(cases, viewports or ["desktop"])
     # Resume: keep first attempts already finished in this execution pass (pass / fail / blocked); errors are retried.
     since = run.options.get("execution_started_at", "")
     if not resume or not since:
@@ -190,6 +215,10 @@ def run_execution(
             attempts[case.id].append(again)
         save(case)
 
+    if ctx.ai is not None and ctx.ai.available():
+        tracker.stage_progress("verify", 0.8, "Recalculating business rules in Python")
+        recalculate_rules(repo, ctx, cases, attempts, save)
+
     by_id = {c.id: c for c in cases}
     for case in cases:
         tries = attempts[case.id]
@@ -208,6 +237,7 @@ def run_execution(
                 role=first.role or case.role,
                 result=final,
                 method=first.method,
+                viewport=case.viewports[0] if "@" in case.id and case.viewports else "desktop",
                 reproducibility=f"{fails}/{len(tries)}" if first.result == "fail" else "",
                 flaky=first.result == "fail" and len(tries) > 1 and fails < len(tries),
                 reason=first.reason,
@@ -237,7 +267,7 @@ def run_execution(
     if repo.has_run_doc(run, FINDINGS_FILE):
         drafts += bugbuilder.finding_bugs(repo.load_run_doc(run, FINDINGS_FILE, FindingsDoc).findings, run)
     drafts = bugbuilder.dedupe(drafts, ctx.ai if ctx.ai is not None and ctx.ai.available() else None)
-    bug_list = bugbuilder.finalize(repo, run, drafts)
+    bug_list = bugbuilder.finalize(repo, run, drafts, blur=ctx.privacy)
     for bug in bug_list:
         for tc in bug.test_case_ids:
             res = next((r for r in results.results if r.test_case_id == tc), None)
@@ -247,11 +277,63 @@ def run_execution(
     repo.save_run_doc(run, RESULTS_FILE, results)
     repo.save_run_doc(run, BUGS_FILE, BugsDoc(bugs=bug_list))
     repo.update_run_summary(run.project_slug, run.id, bugs=sum(1 for b in bug_list if b.status != "rejected"))
+    from app.verify import store  # local import: store reads this module's file names
+
+    q = store.refresh_quality(repo, run)
+    store.permission_matrix(repo, run)
     review = sum(1 for b in bug_list if b.status == "needs_review")
     tracker.stage_done(
-        "verify", f"{len(bug_list)} bugs ({review} need review) from {len(failures)} failing tests"
+        "verify",
+        f"{len(bug_list)} bugs ({review} need review) from {len(failures)} failing tests"
+        + (f" · quality {q.score:g} ({q.grade})" if q and q.score is not None else ""),
     )
     return results
+
+
+def recalculate_rules(
+    repo: Repository, ctx: RunContext, cases: list[TestCase], attempts: dict[str, list[Execution]], save: Any
+) -> None:
+    """Layer 3: for tests linked to confirmed rules, re-check the rule in Python from values read off the page."""
+    if not repo.has_run_doc(ctx.run, REQUIREMENTS_FILE):
+        return
+    rules = {
+        r.id: r
+        for r in repo.load_run_doc(ctx.run, REQUIREMENTS_FILE, RequirementsDoc).rules
+        if r.status in ("confirmed", "edited") and r.condition
+    }
+    for case in cases:
+        linked = [rid for rid in case.links.get("rules", []) if rid in rules][:2]
+        first = attempts.get(case.id, [None])[0]
+        if not linked or first is None or first.method != "agent" or first.result not in ("pass", "fail"):
+            continue
+        if first.rule_checks:
+            continue  # already recalculated (resumed run)
+        shot = next((s.screenshot_after for s in reversed(first.steps) if s.screenshot_after), "")
+        png = (
+            repo.run_path(ctx.run, shot).read_bytes()
+            if shot and repo.run_path(ctx.run, shot).exists()
+            else None
+        )
+        for rid in linked:
+            rule = rules[rid]
+            try:
+                check = check_rule(ctx.ai, rid, rule.statement, rule.condition, first.final_page_text, png)
+            except Exception as exc:
+                log.warning("rule recalculation %s/%s failed: %s", case.id, rid, exc)
+                continue
+            first.rule_checks.append(check.model_dump())
+            if check.holds is False and first.result == "pass":
+                values = ", ".join(f"{k}={v:g}" for k, v in check.values.items())
+                first.result, first.confidence = "fail", 0.75
+                first.reason = f"Python recalculation: {rid} does not hold ({check.expression}; {values})."
+                first.expected = first.expected or rule.statement
+                first.actual = f"Values on the page: {values}; rule {rid} evaluates to false."
+                first.failure_step = len(first.steps)
+            elif check.holds is True and first.result == "fail":
+                first.confidence = round(
+                    first.confidence * 0.6, 2
+                )  # the numbers say the rule holds: review it
+        save(case)
 
 
 def _icon(result: str) -> str:
@@ -282,6 +364,11 @@ def execute_job(repo: Repository, tracker: RunTracker, overrides: dict[str, Any]
         project = repo.get_project(run.project_slug)
         settings = get_settings()
         ai = AIClient(usage=run.token_usage, on_usage=tracker.usage_update) if AIClient.available() else None
+        domain = (
+            repo.load_run_doc(run, PROFILE_FILE, SiteProfile).domain
+            if repo.has_run_doc(run, PROFILE_FILE)
+            else ""
+        )
         ctx = RunContext(
             repo,
             run,
@@ -290,6 +377,7 @@ def execute_job(repo: Repository, tracker: RunTracker, overrides: dict[str, Any]
             settings,
             ai,
             headless=overrides.get("headless", settings["browser"]["headless"]),
+            privacy=privacy_enabled(project, domain),
         )
         for stage in ("execute", "verify"):
             state = run.stages[stage]
@@ -299,7 +387,12 @@ def execute_job(repo: Repository, tracker: RunTracker, overrides: dict[str, Any]
         run.finished_at = None
         tracker.save()
         results = run_execution(
-            repo, tracker, ctx, overrides.get("case_ids"), resume=bool(overrides.get("resume"))
+            repo,
+            tracker,
+            ctx,
+            overrides.get("case_ids"),
+            resume=bool(overrides.get("resume")),
+            viewports=overrides.get("viewports"),
         )
         counts = {
             k: sum(1 for r in results.results if r.result == k) for k in ("pass", "fail", "blocked", "error")

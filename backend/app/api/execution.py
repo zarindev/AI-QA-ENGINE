@@ -21,6 +21,7 @@ from app.explore.urls import Scope
 from app.storage.repository import NotFoundError
 from app.storage.schemas import BugsDoc, ExecutionsDoc, ReplayScript, ResultsDoc, TestSuite
 from app.testdesign.stage import TESTCASES_FILE
+from app.verify import store
 
 router = APIRouter(prefix="/api/projects/{slug}/runs/{run_id}", tags=["execution"])
 log = get_logger("api.execution")
@@ -30,6 +31,7 @@ class ExecuteIn(BaseModel):
     case_ids: list[str] | None = None
     headless: bool | None = None
     resume: bool = False  # skip tests that already finished in the last execution pass
+    viewports: list[Literal["desktop", "tablet", "mobile"]] = ["desktop"]  # multi-viewport runs
 
 
 @router.post("/execute", status_code=202)
@@ -52,7 +54,11 @@ def start_execution(slug: str, run_id: str, body: ExecuteIn) -> dict[str, Any]:
             and c.technique in ("smoke", "permission", "ui_responsive", "accessibility")
         )
     ]
-    overrides: dict[str, Any] = {"case_ids": body.case_ids, "resume": body.resume}
+    overrides: dict[str, Any] = {
+        "case_ids": body.case_ids,
+        "resume": body.resume,
+        "viewports": body.viewports,
+    }
     if body.headless is not None:
         overrides["headless"] = body.headless
     executor().submit(run, overrides, target=execute_job)
@@ -115,6 +121,7 @@ def update_bug(slug: str, run_id: str, bug_id: str, body: BugUpdate) -> dict[str
     repo().update_run_summary(
         slug, run_id, bugs=sum(1 for b in bugs if b.status not in ("rejected", "fixed"))
     )
+    store.refresh_quality(repo(), run)
     return result
 
 

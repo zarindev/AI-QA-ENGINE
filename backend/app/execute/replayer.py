@@ -120,7 +120,7 @@ def replay_case(ctx: RunContext, case: TestCase, script: ReplayScript, attempt: 
             actions.observe()
             judgement = _judge(ctx.ai, case, script, actions, png or recorder.current_png())
             final_url = session.current_url
-            files = recorder.finish(f"{case.id} · {case.title} (replay)")
+            files = recorder.finish(f"{case.id} · {case.title} (replay)", blur=ctx.privacy)
     finally:
         session.close()
     if healed:

@@ -45,6 +45,7 @@ export interface Project {
   authorized_at: string;
   roles: Role[];
   scope: { max_pages: number; max_depth: number; include_patterns: string[]; exclude_patterns: string[] };
+  privacy_blur: boolean | null;
   latest_run: RunSummary | null;
   runs: number;
   running: boolean;
@@ -275,7 +276,19 @@ export interface Execution {
   console_log: string;
   network_log: string;
   token_usage: { cost_usd: number; requests: number };
+  rule_checks: { rule_id: string; expression: string; values: Record<string, number>; holds: boolean | null; explanation: string; error: string }[];
 }
+
+export type Viewport = "desktop" | "tablet" | "mobile";
+
+export interface SubScore { key: string; label: string; score: number | null; passed: number; executed: number; bugs: number; note: string }
+export interface Quality { score: number | null; grade: string; sub_scores: SubScore[]; formula: string }
+export interface HeatCell { module: string; technique: string; state: "pass" | "fail" | "warn" | "untested"; total: number; passed: number; failed: number; other: number; cases: string[] }
+export interface Heatmap { modules: string[]; techniques: string[]; cells: HeatCell[] }
+export interface MatrixCell { role: string; page: string; expected: "allow" | "deny" | "unknown"; observed: "allow" | "deny" | "untested"; hole: boolean; source: string; evidence: string }
+export interface PermissionMatrix { roles: string[]; pages: string[]; cells: MatrixCell[]; holes: number }
+export interface ComparedBug { key: string; title: string; severity: Severity; status: "new" | "fixed" | "reappeared" | "still_open"; current_id: string; base_id: string }
+export interface Comparison { base_run: string; current_run: string; counts: Record<ComparedBug["status"], number>; bugs: ComparedBug[] }
 
 export interface TestRunResult {
   test_case_id: string;
@@ -289,6 +302,7 @@ export interface TestRunResult {
   flaky: boolean;
   reason: string;
   method: string;
+  viewport: string;
   duration_ms: number;
   cost_usd: number;
   bug_ids: string[];
@@ -404,9 +418,16 @@ export const api = {
   exports: (slug: string, id: string) => request<ExportFile[]>(`/api/projects/${slug}/runs/${id}/exports`),
   createExport: (slug: string, id: string, kind: "requirements" | "testcases_xlsx" | "gherkin_zip") =>
     request<{ files: string[] }>(`/api/projects/${slug}/runs/${id}/exports/${kind}`, { method: "POST" }),
-  execute: (slug: string, id: string, caseIds?: string[]) =>
+  execute: (slug: string, id: string, caseIds?: string[], viewports: Viewport[] = ["desktop"]) =>
     request<{ status: string; cases: number; agent_cases: number; ai: boolean; mode: string }>(
-      `/api/projects/${slug}/runs/${id}/execute`, { method: "POST", body: JSON.stringify({ case_ids: caseIds ?? null }) }),
+      `/api/projects/${slug}/runs/${id}/execute`, { method: "POST", body: JSON.stringify({ case_ids: caseIds ?? null, viewports }) }),
+  quality: (slug: string, id: string) =>
+    request<{ quality: Quality; heatmap: Heatmap | null }>(`/api/projects/${slug}/runs/${id}/quality`),
+  permissions: (slug: string, id: string) => request<PermissionMatrix>(`/api/projects/${slug}/runs/${id}/permissions`),
+  compare: (slug: string, id: string, base?: string) =>
+    request<{ available: string[]; comparison: Comparison | null }>(`/api/projects/${slug}/runs/${id}/compare${base ? `?base=${base}` : ""}`),
+  updateProject: (slug: string, body: { privacy_blur?: "auto" | "on" | "off"; name?: string }) =>
+    request<Project>(`/api/projects/${slug}`, { method: "PATCH", body: JSON.stringify(body) }),
   results: (slug: string, id: string) =>
     request<{ results: TestRunResult[]; mode: string; started_at: string; finished_at: string | null }>(`/api/projects/${slug}/runs/${id}/results`),
   executions: (slug: string, id: string, caseId: string) =>

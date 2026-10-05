@@ -528,6 +528,10 @@ class Execution(Document):
     steps: list[StepResult] = Field(default_factory=list)
     failure_step: int | None = None
     auto_findings: list[AutoFinding] = Field(default_factory=list)
+    final_page_text: str = ""  # visible text of the last page, for business-rule recalculation
+    rule_checks: list[dict[str, Any]] = Field(
+        default_factory=list
+    )  # Python recalculations of confirmed rules
     video: str = ""
     console_log: str = ""
     network_log: str = ""
@@ -574,6 +578,7 @@ class TestRunResult(Model):
     flaky: bool = False
     reason: str = ""
     method: str = ""
+    viewport: str = "desktop"
     duration_ms: int = 0
     cost_usd: float = 0.0
     bug_ids: list[str] = Field(default_factory=list)

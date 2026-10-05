@@ -94,6 +94,7 @@ export function ProjectDetail() {
               <Row label="Authorized by">{p.authorized_by}</Row>
               <Row label="Confirmed">{new Date(p.authorized_at).toLocaleString()}</Row>
               <Row label="Limits">{p.scope.max_pages} pages · depth {p.scope.max_depth}</Row>
+              <Row label="Privacy blur"><PrivacyToggle project={p} /></Row>
             </CardContent>
           </Card>
           <RolesCard project={p} />
@@ -112,6 +113,26 @@ export function ProjectDetail() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+/** Blur emails, phone numbers and people's names in screenshots, videos and exports. Auto = on for healthcare and banking. */
+function PrivacyToggle({ project }: { project: Project }) {
+  const qc = useQueryClient();
+  const current = project.privacy_blur == null ? "auto" : project.privacy_blur ? "on" : "off";
+  const save = useMutation({
+    mutationFn: (v: "auto" | "on" | "off") => api.updateProject(project.slug, { privacy_blur: v }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["project", project.slug] }); toast.success("Privacy setting saved — applies to the next run and exports"); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <span role="radiogroup" aria-label="Privacy blur" className="inline-flex rounded-lg border border-line p-0.5 text-xs">
+      {(["auto", "on", "off"] as const).map((v) => (
+        <button key={v} type="button" role="radio" aria-checked={current === v} disabled={save.isPending} onClick={() => save.mutate(v)}
+          title={v === "auto" ? "On for healthcare and banking sites" : undefined}
+          className={current === v ? "rounded-md bg-primary-soft px-2 py-0.5 capitalize text-fg" : "px-2 py-0.5 capitalize text-muted hover:text-fg"}>{v}</button>
+      ))}
+    </span>
   );
 }
 

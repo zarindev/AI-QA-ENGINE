@@ -25,6 +25,9 @@ UPLOAD_FIXTURE = BACKEND_DIR / "app" / "execute" / "fixtures" / "qap-test-upload
 ACCEPT_CONFIRMS_JS = "window.confirm = () => true; window.alert = () => {};"
 
 
+VIEWPORTS = {"desktop": (1440, 900), "tablet": (768, 1024), "mobile": (390, 844)}
+
+
 @dataclass
 class RunContext:
     repo: Repository
@@ -34,6 +37,7 @@ class RunContext:
     settings: dict[str, Any]
     ai: Any = None
     headless: bool = True
+    privacy: bool = False  # blur personal data in videos and bug evidence
 
 
 def resolve_role(project: Project, wanted: str) -> str:
@@ -95,8 +99,9 @@ def run_agent_case(ctx: RunContext, case: TestCase, attempt: int) -> Execution:
     role = resolve_role(ctx.project, case.role)
     started = utcnow()
     usage_before = ctx.ai.usage.model_copy()
+    viewport = next((v for v in case.viewports if v in VIEWPORTS), "desktop")
     try:
-        session, _note = open_session(ctx, role)
+        session, _note = open_session(ctx, role, *VIEWPORTS[viewport])
     except LoginFailed as exc:
         return Execution(
             test_case_id=case.id,
@@ -127,7 +132,11 @@ def run_agent_case(ctx: RunContext, case: TestCase, attempt: int) -> Execution:
             effort=ctx.settings.get("execute", {}).get("agent_effort", "low"),
         )
         verdict = agent.run()
-        files = recorder.finish(f"{case.id} · {case.title}")
+        try:
+            final_text = actions.observe().text[:5000]
+        except Exception:  # the page may be gone; the recalculation is then skipped
+            final_text = ""
+        files = recorder.finish(f"{case.id} · {case.title}", blur=ctx.privacy)
     finally:
         session.close()
     usage = _usage_delta(usage_before, ctx.ai.usage)
@@ -145,7 +154,9 @@ def run_agent_case(ctx: RunContext, case: TestCase, attempt: int) -> Execution:
         finished_at=utcnow(),
         steps=verdict.steps,
         failure_step=verdict.failure_step,
+        viewport=viewport,
         auto_findings=recorder.findings,
+        final_page_text=final_text,
         video=files.get("video", ""),
         console_log=files.get("console", ""),
         network_log=files.get("network", ""),

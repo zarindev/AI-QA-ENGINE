@@ -173,3 +173,35 @@ def test_run_pipeline_end_to_end(client, fixture_site, settings):
     assert len(ex["attempts"]) == 3 and ex["attempts"][0]["steps"][0]["screenshot_after"].endswith(".jpg")
     upd = client.patch(f"{base}/bugs/{js['id']}", json={"status": "confirmed"}).json()
     assert upd["status"] == "confirmed"
+
+
+def test_privacy_toggle_and_insights_endpoints(client):
+    slug = _project(client, "clinic.test").json()["slug"]
+    assert client.patch(f"/api/projects/{slug}", json={"privacy_blur": "on"}).json()["privacy_blur"] is True
+    assert client.patch(f"/api/projects/{slug}", json={"privacy_blur": "auto"}).json()["privacy_blur"] is None
+    assert client.patch(f"/api/projects/{slug}", json={"privacy_blur": "maybe"}).status_code == 422
+
+    from app.api.deps import repo
+    from app.execute.stage import BUGS_FILE, RESULTS_FILE
+    from app.storage.schemas import Bug, BugsDoc, ResultsDoc, Run, TestRunResult
+
+    r = repo()
+    old = r.create_run(Run(id="20260101-000000", project_slug=slug))
+    r.save_run_doc(old, BUGS_FILE, BugsDoc(bugs=[Bug(id="BUG-001", title="Old", symptom_key="old")]))
+    run = r.create_run(Run(id="20260102-000000", project_slug=slug))
+    r.save_run_doc(
+        run,
+        RESULTS_FILE,
+        ResultsDoc(results=[TestRunResult(test_case_id="TC-1", technique="crud", result="pass")]),
+    )
+    r.save_run_doc(
+        run, BUGS_FILE, BugsDoc(bugs=[Bug(id="BUG-001", title="New", severity="minor", symptom_key="new")])
+    )
+    base = f"/api/projects/{slug}/runs/{run.id}"
+    q = client.get(f"{base}/quality").json()["quality"]
+    assert q["score"] == 95.0  # 100 % functional pass − 5 for the open minor bug
+    client.patch(f"{base}/bugs/BUG-001", json={"status": "rejected"})
+    assert client.get(f"{base}/quality").json()["quality"]["score"] == 100.0
+    cmp = client.get(f"{base}/compare").json()
+    assert cmp["available"] == [old.id] and cmp["comparison"]["counts"]["fixed"] == 1
+    assert client.get(f"/api/projects/{slug}/runs/{old.id}/quality").status_code == 404

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import io
 import textwrap
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -90,8 +90,8 @@ def _caption(img: Image.Image, draw: ImageDraw.ImageDraw, caption: str, highligh
         draw.text((24, img.height - height + 12 + i * line_h), line, fill=(255, 255, 255), font=font)
 
 
-def _frame(path: Path, caption: str) -> bytes:
-    img = Image.open(path).convert("RGB")
+def _frame(path: Path, caption: str, load: Callable[[Path], bytes] | None = None) -> bytes:
+    img = Image.open(io.BytesIO(load(path)) if load else path).convert("RGB")
     img.thumbnail((FRAME_W, FRAME_H), Image.Resampling.LANCZOS)
     canvas = Image.new("RGB", (FRAME_W, FRAME_H), BAR)
     canvas.paste(img, ((FRAME_W - img.width) // 2, 0))
@@ -100,7 +100,12 @@ def _frame(path: Path, caption: str) -> bytes:
     return canvas.tobytes()
 
 
-def build_video(frames: Iterable[tuple[Path, str]], out: Path, seconds_per_frame: float = 2.0) -> Path | None:
+def build_video(
+    frames: Iterable[tuple[Path, str]],
+    out: Path,
+    seconds_per_frame: float = 2.0,
+    load: Callable[[Path], bytes] | None = None,
+) -> Path | None:
     """MP4 (H.264) from (image, caption) pairs. Returns None when there is nothing to encode."""
     import imageio_ffmpeg
 
@@ -123,7 +128,7 @@ def build_video(frames: Iterable[tuple[Path, str]], out: Path, seconds_per_frame
     writer.send(None)
     try:
         for path, caption in items:
-            data = _frame(path, caption)
+            data = _frame(path, caption, load)
             for _ in range(hold):
                 writer.send(data)
     finally:
@@ -131,7 +136,12 @@ def build_video(frames: Iterable[tuple[Path, str]], out: Path, seconds_per_frame
     return out
 
 
-def build_clip(frames: list[tuple[Path, str]], annotated: Path | None, out: Path) -> Path | None:
+def build_clip(
+    frames: list[tuple[Path, str]],
+    annotated: Path | None,
+    out: Path,
+    load: Callable[[Path], bytes] | None = None,
+) -> Path | None:
     """10–25 s: up to the last 6 steps (2 s each), then the annotated failure screen for 4 s."""
     tail = frames[-6:]
     seq = list(tail)
@@ -141,4 +151,9 @@ def build_clip(frames: list[tuple[Path, str]], annotated: Path | None, out: Path
         return None
     while len(seq) < 5:  # at least ~10 s
         seq.insert(0, seq[0])
-    return build_video(seq, out, seconds_per_frame=2.0)
+
+    # the annotated image is already blurred when privacy is on, so it is loaded as-is
+    def loader(p: Path) -> bytes:
+        return p.read_bytes() if (annotated and p == annotated) or load is None else load(p)
+
+    return build_video(seq, out, seconds_per_frame=2.0, load=loader)

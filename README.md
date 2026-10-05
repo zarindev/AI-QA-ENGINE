@@ -33,4 +33,4 @@ Only test sites you own or are authorized to test.
 
 ## License
 
-MIT © Muzahidul Rahman
+MIT © Md Zarin Tasnim

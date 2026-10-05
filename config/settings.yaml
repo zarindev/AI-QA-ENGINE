@@ -6,7 +6,8 @@ ai:
   effort: medium              # low | medium | high | xhigh | max
   max_tokens: 16000
   use_server_fallbacks: true  # re-run refused requests on Anthropic's recommended fallback model
-  run_token_budget: 2000000   # hard stop for one run (input + output tokens)
+  run_token_budget: 6000000   # hard stop for one run (uncached input + output tokens)
+  run_cost_budget_usd: 25     # hard stop for one run in US dollars
   response_cache: true        # reuse identical AI answers from workspace/.cache/ai
   request_timeout_s: 180
   max_retries: 3

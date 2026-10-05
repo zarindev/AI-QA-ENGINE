@@ -109,6 +109,7 @@ class AIClient:
             budget_tokens if budget_tokens is not None else int(self.settings.get("run_token_budget", 0))
         )
         self.on_usage = on_usage
+        self.cost_budget = float(self.settings.get("run_cost_budget_usd", 0) or 0)
         self.cache_dir = cache_dir or workspace_root() / ".cache" / "ai"
         self.use_fallbacks = bool(self.settings.get("use_server_fallbacks", True))
         self._lock = threading.Lock()
@@ -160,8 +161,20 @@ class AIClient:
     # ------------------------------------------------------------------ accounting
 
     def _check_budget(self) -> None:
-        if self.budget and self.usage.total >= self.budget:
-            raise BudgetExceeded(f"Token budget of {self.budget:,} tokens for this run is used up.")
+        """Budgets count uncached tokens (cache reads cost a tenth and would exhaust a token budget early) and
+        dollars. Raised before the next request, so a run never overshoots by more than one request."""
+        u = self.usage
+        uncached = u.input_tokens + u.output_tokens + u.cache_write_tokens
+        if self.budget and uncached >= self.budget:
+            raise BudgetExceeded(
+                f"Token budget of {self.budget:,} uncached tokens for this run is used up "
+                "(Settings → Claude → token budget)."
+            )
+        if self.cost_budget and u.cost_usd >= self.cost_budget:
+            raise BudgetExceeded(
+                f"Cost budget of ${self.cost_budget:.2f} for this run is used up "
+                "(Settings → Claude → cost budget)."
+            )
 
     def _record(self, model: str, usage: Any, cached: bool = False) -> None:
         with self._lock:

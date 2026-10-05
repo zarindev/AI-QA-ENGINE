@@ -52,7 +52,7 @@ export function SettingsPage() {
                   {["low", "medium", "high", "xhigh", "max"].map((v) => <option key={v}>{v}</option>)}
                 </select>
               </div>
-              <div><Label htmlFor="budget">Token budget per run</Label><Input id="budget" type="number" value={num("ai", "run_token_budget")} onChange={(e) => set("ai", "run_token_budget", Number(e.target.value))} /></div>
+              <div><Label htmlFor="budget">Cost budget per run ($)</Label><Input id="budget" type="number" step="1" value={num("ai", "run_cost_budget_usd")} onChange={(e) => set("ai", "run_cost_budget_usd", Number(e.target.value))} /><Hint>A run stops cleanly when it reaches this.</Hint></div>
             </div>
           </CardContent>
         </Card>

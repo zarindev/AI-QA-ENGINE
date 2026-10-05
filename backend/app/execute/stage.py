@@ -15,7 +15,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
-from app.ai.client import AIUnavailable
+from app.ai.client import AIUnavailable, BudgetExceeded
 from app.core.logging import get_logger
 from app.execute.replayer import replay_case, script_from
 from app.execute.rule_runner import RULE_TECHNIQUES, run_rule_case
@@ -126,8 +126,8 @@ def run_execution(
             return execute_once(ctx, case, 1)
         except RunCancelled:
             raise
-        except AIUnavailable as exc:
-            # No credits / no key: every remaining test would fail the same way. Stop the whole run instead.
+        except (AIUnavailable, BudgetExceeded) as exc:
+            # No credits / no key / budget spent: every remaining test would fail the same way. Stop the run.
             abort.append(str(exc))
             tracker.cancel_requested.set()
             raise RunCancelled() from exc
@@ -150,6 +150,8 @@ def run_execution(
                 if abort:
                     for pending in futures:
                         pending.cancel()
+                    if "budget" in abort[0].lower():
+                        raise BudgetExceeded(abort[0]) from None
                     raise AIUnavailable(abort[0]) from None
                 raise
             with lock:

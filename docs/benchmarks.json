@@ -1,0 +1,640 @@
+{
+  "apps": {
+    "clinic": {
+      "app": "CarePoint Clinic",
+      "domain": "healthcare",
+      "project": "carepoint-clinic",
+      "run": "20261005-001738",
+      "mode": "full",
+      "model": "claude-sonnet-5-5",
+      "pages_explored": 41,
+      "test_cases_approved": 71,
+      "results": {
+        "pass": 39,
+        "fail": 30,
+        "blocked": 2,
+        "error": 0
+      },
+      "bugs_reported": 23,
+      "planted_total": 15,
+      "planted_found": 13,
+      "detection_rate": 0.867,
+      "found": [
+        "CL-01",
+        "CL-02",
+        "CL-03",
+        "CL-04",
+        "CL-05",
+        "CL-06",
+        "CL-08",
+        "CL-09",
+        "CL-10",
+        "CL-11",
+        "CL-12",
+        "CL-13",
+        "CL-15"
+      ],
+      "found_only_in_needs_review": [],
+      "missed": [
+        "CL-07",
+        "CL-14"
+      ],
+      "severity_agreement": "8/13",
+      "genuine_unplanted": 7,
+      "duplicates_of_planted": 0,
+      "false_positives": 2,
+      "quality_score": 21.4,
+      "claude_cost_usd": 5.88,
+      "browser_minutes": 55.4,
+      "scored_with": "claude",
+      "matches": [
+        {
+          "planted_id": "CL-01",
+          "found": true,
+          "bug_ids": [
+            "BUG-011"
+          ],
+          "reason": "Double booking of same doctor/time accepted."
+        },
+        {
+          "planted_id": "CL-02",
+          "found": true,
+          "bug_ids": [
+            "BUG-003"
+          ],
+          "reason": "Invoice patient pays ignores insurance coverage."
+        },
+        {
+          "planted_id": "CL-03",
+          "found": true,
+          "bug_ids": [
+            "BUG-002",
+            "BUG-004"
+          ],
+          "reason": "Non-admin can open /reports by URL."
+        },
+        {
+          "planted_id": "CL-04",
+          "found": true,
+          "bug_ids": [
+            "BUG-001"
+          ],
+          "reason": "Non-admin roles can open /doctors/new."
+        },
+        {
+          "planted_id": "CL-05",
+          "found": true,
+          "bug_ids": [
+            "BUG-023"
+          ],
+          "reason": "Phone 'call me maybe' saved."
+        },
+        {
+          "planted_id": "CL-06",
+          "found": true,
+          "bug_ids": [
+            "BUG-012"
+          ],
+          "reason": "Future DOB accepted."
+        },
+        {
+          "planted_id": "CL-07",
+          "found": false,
+          "bug_ids": [],
+          "reason": "No report about the completed visits count on patient profile."
+        },
+        {
+          "planted_id": "CL-08",
+          "found": true,
+          "bug_ids": [
+            "BUG-005"
+          ],
+          "reason": "Inactive doctor bookable."
+        },
+        {
+          "planted_id": "CL-09",
+          "found": true,
+          "bug_ids": [
+            "BUG-008"
+          ],
+          "reason": "Cancelled appointment can be completed."
+        },
+        {
+          "planted_id": "CL-10",
+          "found": true,
+          "bug_ids": [
+            "BUG-007"
+          ],
+          "reason": "Privacy policy 404."
+        },
+        {
+          "planted_id": "CL-11",
+          "found": true,
+          "bug_ids": [
+            "BUG-017"
+          ],
+          "reason": "Same JS TypeError on /appointments."
+        },
+        {
+          "planted_id": "CL-12",
+          "found": true,
+          "bug_ids": [
+            "BUG-020"
+          ],
+          "reason": "Patients page overflows horizontally on small screens."
+        },
+        {
+          "planted_id": "CL-13",
+          "found": true,
+          "bug_ids": [
+            "BUG-022"
+          ],
+          "reason": "Missing alt text on doctor avatars (part of the planted accessibility bug)."
+        },
+        {
+          "planted_id": "CL-14",
+          "found": false,
+          "bug_ids": [],
+          "reason": "Revenue calculation on reports not reported as wrong."
+        },
+        {
+          "planted_id": "CL-15",
+          "found": true,
+          "bug_ids": [
+            "BUG-013"
+          ],
+          "reason": "Prescription duration 0 accepted."
+        }
+      ],
+      "extras": [
+        {
+          "bug_id": "BUG-006",
+          "verdict": "genuine",
+          "reason": "Status filter results inconsistent with count; plausible real defect with evidence."
+        },
+        {
+          "bug_id": "BUG-009",
+          "verdict": "false_positive",
+          "reason": "Intermittent 1/3 with an extra QAP_Cover50 invoice, likely test interference."
+        },
+        {
+          "bug_id": "BUG-010",
+          "verdict": "genuine",
+          "reason": "Dashboard upcoming table inconsistent with card count; may just be a row limit but evidence shows inconsistency."
+        },
+        {
+          "bug_id": "BUG-014",
+          "verdict": "false_positive",
+          "reason": "Expectation that receptionist can deactivate doctors is unsupported; likely admin-only by design."
+        },
+        {
+          "bug_id": "BUG-015",
+          "verdict": "genuine",
+          "reason": "Scheduled appointment can be completed skipping check-in; real state transition problem."
+        },
+        {
+          "bug_id": "BUG-016",
+          "verdict": "genuine",
+          "reason": "Fee 0 rejected with message saying greater than 0; the stated rule is ambiguous, but the behavior is plausibly inconsistent."
+        },
+        {
+          "bug_id": "BUG-018",
+          "verdict": "genuine",
+          "reason": "Billing page overflows at mobile width; real layout issue."
+        },
+        {
+          "bug_id": "BUG-019",
+          "verdict": "genuine",
+          "reason": "Doctors page overflows at mobile width."
+        },
+        {
+          "bug_id": "BUG-021",
+          "verdict": "genuine",
+          "reason": "Prescriptions page overflows at mobile width."
+        }
+      ]
+    },
+    "rental": {
+      "app": "DriveNow Rentals",
+      "domain": "rental",
+      "project": "drivenow-rentals",
+      "run": "20261005-002110",
+      "mode": "full",
+      "model": "claude-sonnet-5-5",
+      "pages_explored": 42,
+      "test_cases_approved": 60,
+      "results": {
+        "pass": 33,
+        "fail": 25,
+        "blocked": 1,
+        "error": 1
+      },
+      "bugs_reported": 20,
+      "planted_total": 15,
+      "planted_found": 15,
+      "detection_rate": 1.0,
+      "found": [
+        "CR-01",
+        "CR-02",
+        "CR-03",
+        "CR-04",
+        "CR-05",
+        "CR-06",
+        "CR-07",
+        "CR-08",
+        "CR-09",
+        "CR-10",
+        "CR-11",
+        "CR-12",
+        "CR-13",
+        "CR-14",
+        "CR-15"
+      ],
+      "found_only_in_needs_review": [
+        "CR-02"
+      ],
+      "missed": [],
+      "severity_agreement": "11/15",
+      "genuine_unplanted": 2,
+      "duplicates_of_planted": 0,
+      "false_positives": 1,
+      "quality_score": 25.3,
+      "claude_cost_usd": 4.87,
+      "browser_minutes": 43.8,
+      "scored_with": "claude",
+      "matches": [
+        {
+          "planted_id": "CR-01",
+          "found": true,
+          "bug_ids": [
+            "BUG-008"
+          ],
+          "reason": "Return before pickup accepted with negative total."
+        },
+        {
+          "planted_id": "CR-02",
+          "found": true,
+          "bug_ids": [
+            "BUG-007"
+          ],
+          "reason": "Overlapping booking for the same car accepted (boundary-date overlap); same defect of double-booking."
+        },
+        {
+          "planted_id": "CR-03",
+          "found": true,
+          "bug_ids": [
+            "BUG-014"
+          ],
+          "reason": "Same-day rental priced at 0 days and $0.00."
+        },
+        {
+          "planted_id": "CR-04",
+          "found": true,
+          "bug_ids": [
+            "BUG-002"
+          ],
+          "reason": "Customer can open another customer's booking."
+        },
+        {
+          "planted_id": "CR-05",
+          "found": true,
+          "bug_ids": [
+            "BUG-001"
+          ],
+          "reason": "Revenue report accessible to agent and customer by URL."
+        },
+        {
+          "planted_id": "CR-06",
+          "found": true,
+          "bug_ids": [
+            "BUG-006"
+          ],
+          "reason": "Booking accepted for the maintenance Kia Picanto."
+        },
+        {
+          "planted_id": "CR-07",
+          "found": true,
+          "bug_ids": [
+            "BUG-011",
+            "BUG-012"
+          ],
+          "reason": "Hand over works for cancelled and returned bookings."
+        },
+        {
+          "planted_id": "CR-08",
+          "found": true,
+          "bug_ids": [
+            "BUG-003"
+          ],
+          "reason": "7-day rental gets no weekly discount."
+        },
+        {
+          "planted_id": "CR-09",
+          "found": true,
+          "bug_ids": [
+            "BUG-004",
+            "BUG-005"
+          ],
+          "reason": "Negative and zero daily rate accepted for a car."
+        },
+        {
+          "planted_id": "CR-10",
+          "found": true,
+          "bug_ids": [
+            "BUG-010"
+          ],
+          "reason": "Terms link returns 404."
+        },
+        {
+          "planted_id": "CR-11",
+          "found": true,
+          "bug_ids": [
+            "BUG-015"
+          ],
+          "reason": "highlightToday ReferenceError on /calendar."
+        },
+        {
+          "planted_id": "CR-12",
+          "found": true,
+          "bug_ids": [
+            "BUG-020"
+          ],
+          "reason": "Tesla image /static/tesla-model3.jpg fails on /cars/4."
+        },
+        {
+          "planted_id": "CR-13",
+          "found": true,
+          "bug_ids": [
+            "BUG-019"
+          ],
+          "reason": "Date inputs on /bookings/new lack labels."
+        },
+        {
+          "planted_id": "CR-14",
+          "found": true,
+          "bug_ids": [
+            "BUG-016"
+          ],
+          "reason": "Calendar overflows horizontally on small screens."
+        },
+        {
+          "planted_id": "CR-15",
+          "found": true,
+          "bug_ids": [
+            "BUG-013"
+          ],
+          "reason": "Car remains rented after return."
+        }
+      ],
+      "extras": [
+        {
+          "bug_id": "BUG-009",
+          "verdict": "false_positive",
+          "reason": "Test assumed dates; the 1-day result for 10-08 to 10-09 is correct, with 1 of 3 reproduction."
+        },
+        {
+          "bug_id": "BUG-017",
+          "verdict": "genuine",
+          "reason": "Real responsive overflow on /invoices at 390px, though unplanted."
+        },
+        {
+          "bug_id": "BUG-018",
+          "verdict": "genuine",
+          "reason": "Real color-contrast accessibility violation on /calendar reported by axe."
+        }
+      ]
+    },
+    "shop": {
+      "app": "StockRoom POS",
+      "domain": "ecommerce",
+      "project": "stockroom-pos",
+      "run": "20261005-002356",
+      "mode": "full",
+      "model": "claude-sonnet-5-5",
+      "pages_explored": 22,
+      "test_cases_approved": 63,
+      "results": {
+        "pass": 31,
+        "fail": 28,
+        "blocked": 4,
+        "error": 0
+      },
+      "bugs_reported": 24,
+      "planted_total": 15,
+      "planted_found": 13,
+      "detection_rate": 0.867,
+      "found": [
+        "SH-01",
+        "SH-02",
+        "SH-03",
+        "SH-04",
+        "SH-05",
+        "SH-07",
+        "SH-08",
+        "SH-09",
+        "SH-10",
+        "SH-11",
+        "SH-13",
+        "SH-14",
+        "SH-15"
+      ],
+      "found_only_in_needs_review": [
+        "SH-01",
+        "SH-14"
+      ],
+      "missed": [
+        "SH-06",
+        "SH-12"
+      ],
+      "severity_agreement": "7/13",
+      "genuine_unplanted": 4,
+      "duplicates_of_planted": 0,
+      "false_positives": 6,
+      "quality_score": null,
+      "claude_cost_usd": 6.09,
+      "browser_minutes": 59.1,
+      "scored_with": "claude + human review",
+      "matches": [
+        {
+          "planted_id": "SH-01",
+          "found": true,
+          "bug_ids": [
+            "BUG-019"
+          ],
+          "reason": "BUG-019 reports a sale of 4 units accepted when stock was lower than the quantity."
+        },
+        {
+          "planted_id": "SH-02",
+          "found": true,
+          "bug_ids": [
+            "BUG-015"
+          ],
+          "reason": "A product removed from sale is still offered in the New sale dropdowns."
+        },
+        {
+          "planted_id": "SH-03",
+          "found": true,
+          "bug_ids": [
+            "BUG-002"
+          ],
+          "reason": "A cashier can open /reports/profit by URL."
+        },
+        {
+          "planted_id": "SH-04",
+          "found": true,
+          "bug_ids": [
+            "BUG-003"
+          ],
+          "reason": "VAT of 0.08 on a 5.60 subtotal instead of 0.84 at 15%."
+        },
+        {
+          "planted_id": "SH-05",
+          "found": true,
+          "bug_ids": [
+            "BUG-017"
+          ],
+          "reason": "Purchase recorded with 'stock received' message but stock unchanged."
+        },
+        {
+          "planted_id": "SH-06",
+          "found": false,
+          "bug_ids": [],
+          "reason": "Corrected by review: The scorer matched BUG-003, but BUG-003 reports the VAT error (SH-04); no report describes the profit report using the selling price as cost."
+        },
+        {
+          "planted_id": "SH-07",
+          "found": true,
+          "bug_ids": [
+            "BUG-009",
+            "BUG-014"
+          ],
+          "reason": "Negative selling prices are accepted on both the edit and create product forms."
+        },
+        {
+          "planted_id": "SH-08",
+          "found": true,
+          "bug_ids": [
+            "BUG-008"
+          ],
+          "reason": "Duplicate SKU BEV-002 accepted on product creation."
+        },
+        {
+          "planted_id": "SH-09",
+          "found": true,
+          "bug_ids": [
+            "BUG-001"
+          ],
+          "reason": "A cashier can open /products/1/edit by direct URL."
+        },
+        {
+          "planted_id": "SH-10",
+          "found": true,
+          "bug_ids": [
+            "BUG-005"
+          ],
+          "reason": "/help-center returns 404."
+        },
+        {
+          "planted_id": "SH-11",
+          "found": true,
+          "bug_ids": [
+            "BUG-020"
+          ],
+          "reason": "Same TypeError reading 'height' on the Dashboard."
+        },
+        {
+          "planted_id": "SH-12",
+          "found": false,
+          "bug_ids": [],
+          "reason": "No report covers icon-only buttons lacking accessible names."
+        },
+        {
+          "planted_id": "SH-13",
+          "found": true,
+          "bug_ids": [
+            "BUG-021"
+          ],
+          "reason": "The products page overflows horizontally on small screens."
+        },
+        {
+          "planted_id": "SH-14",
+          "found": true,
+          "bug_ids": [
+            "BUG-018"
+          ],
+          "reason": "The Refund button is shown on an already refunded sale and a second refund is accepted."
+        },
+        {
+          "planted_id": "SH-15",
+          "found": true,
+          "bug_ids": [
+            "BUG-007"
+          ],
+          "reason": "Dashboard low stock alerts omit products below 5 that have non-zero stock."
+        }
+      ],
+      "extras": [
+        {
+          "bug_id": "BUG-004",
+          "verdict": "false_positive",
+          "reason": "Price $79.90 comes from test data rather than a planted defect; the VAT part is the planted VAT bug, and the missing Refund button is probably a role or state artifact."
+        },
+        {
+          "bug_id": "BUG-006",
+          "verdict": "false_positive",
+          "reason": "Cashier refund visibility is not a planted or evidenced defect; it may be intended role behaviour or an artifact."
+        },
+        {
+          "bug_id": "BUG-010",
+          "verdict": "genuine",
+          "reason": "Saving an empty stock field silently is a real validation gap that was not planted."
+        },
+        {
+          "bug_id": "BUG-011",
+          "verdict": "false_positive",
+          "reason": "An intermittent 1/3 report that likely rests on test interference from earlier runs."
+        },
+        {
+          "bug_id": "BUG-012",
+          "verdict": "false_positive",
+          "reason": "An intermittent 1/3 stray row that likely comes from test interference."
+        },
+        {
+          "bug_id": "BUG-013",
+          "verdict": "genuine",
+          "reason": "Qty cleared by invalid input is saved as 1; this is a plausible real validation gap, though it was seen only once."
+        },
+        {
+          "bug_id": "BUG-016",
+          "verdict": "false_positive",
+          "reason": "An intermittent 1/3 failure caused by data state, with the product missing from the full list as well."
+        },
+        {
+          "bug_id": "BUG-022",
+          "verdict": "genuine",
+          "reason": "A 5px overflow on /purchases at 390px is a minor but real layout issue."
+        },
+        {
+          "bug_id": "BUG-023",
+          "verdict": "genuine",
+          "reason": "/sales/new overflows by 176px at 390px, which is a real layout problem."
+        },
+        {
+          "bug_id": "BUG-024",
+          "verdict": "false_positive",
+          "reason": "The test submitted no item, so the error is correct behaviour."
+        }
+      ]
+    }
+  },
+  "generated_at": "2026-10-05T11:41:39Z",
+  "totals": {
+    "planted_total": 45,
+    "planted_found": 41,
+    "false_positives": 9,
+    "genuine_unplanted": 13,
+    "claude_cost_usd": 16.84,
+    "detection_rate": 0.911
+  },
+  "method": "Each demo app was explored and tested end to end by QA Pilot (Full Mode, test environment, demo accounts; business rules with confidence ≥ 0.8 confirmed and all designed test cases approved — the review step a person would do). Reports were matched to the planted-bug answer key by Claude with a stated reason per match (see `matches` / `extras`)."
+}

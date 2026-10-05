@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>QA Pilot — Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  @page { size: 1600px 1200px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --blue: #2563EB; --pass: #16A34A; --fail: #DC2626; --warn: #F59E0B; --dark: #0A0F1C; --line: rgba(148,163,184,.18); }
+  html, body { background: #05080f; }
+  body { font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif; color: #E5E7EB; -webkit-font-smoothing: antialiased; }
+  .slide { width: 1600px; height: 1200px; position: relative; overflow: hidden; break-after: page; padding: 96px 110px;
+           background: radial-gradient(1000px 700px at 12% 0%, rgba(37,99,235,.28), transparent 60%),
+                       radial-gradient(800px 600px at 100% 100%, rgba(37,99,235,.16), transparent 60%), var(--dark); }
+  .slide::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(148,163,184,.06) 1px, transparent 1px),
+                   linear-gradient(90deg, rgba(148,163,184,.06) 1px, transparent 1px); background-size: 48px 48px; pointer-events: none; }
+  .slide > * { position: relative; }
+  .kicker { font: 600 22px "JetBrains Mono", monospace; color: #93C5FD; letter-spacing: .12em; text-transform: uppercase; }
+  h1 { font-size: 112px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; color: #fff; }
+  h2 { font-size: 68px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; color: #fff; margin: 18px 0 22px; }
+  .lead { font-size: 31px; line-height: 1.45; color: #CBD5E1; max-width: 1250px; }
+  .num { position: absolute; right: 110px; bottom: 60px; font: 500 20px "JetBrains Mono", monospace; color: #475569; }
+  .brand { position: absolute; left: 110px; bottom: 56px; display: flex; gap: 12px; align-items: center; font-weight: 600; font-size: 21px; color: #94A3B8; }
+  .brand img { width: 34px; height: 34px; }
+  .window { border-radius: 18px; border: 1px solid rgba(148,163,184,.25); background: #0F172A; overflow: hidden;
+            box-shadow: 0 40px 120px rgba(0,0,0,.55), 0 0 0 1px rgba(37,99,235,.15); }
+  .window .bar { height: 40px; display: flex; align-items: center; gap: 9px; padding: 0 16px; background: #111827; border-bottom: 1px solid var(--line); }
+  .window .bar i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .window .bar span { margin-left: 16px; font: 15px "JetBrains Mono", monospace; color: #64748B; }
+  .window img { display: block; width: 100%; }
+  .cards { display: grid; gap: 26px; }
+  .card { border: 1px solid var(--line); background: rgba(15,23,42,.72); border-radius: 22px; padding: 34px; }
+  .card h3 { font-size: 30px; color: #fff; margin: 14px 0 10px; }
+  .card p { font-size: 22px; line-height: 1.5; color: #94A3B8; }
+  .icon { width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center; font-size: 30px; }
+  .pill { display: inline-block; padding: 10px 22px; border-radius: 999px; font: 600 22px "JetBrains Mono", monospace; border: 1px solid; }
+  .stages { display: grid; grid-template-columns: repeat(8, 1fr); gap: 14px; margin-top: 50px; }
+  .stage { border: 1px solid var(--line); border-radius: 18px; padding: 24px 18px; background: rgba(15,23,42,.75); min-height: 300px; }
+  .stage b { display: block; font: 700 22px "JetBrains Mono", monospace; color: #60A5FA; }
+  .stage h4 { font-size: 24px; color: #fff; margin: 12px 0 10px; }
+  .stage p { font-size: 18px; color: #94A3B8; line-height: 1.45; }
+  .big { font-size: 120px; font-weight: 800; letter-spacing: -0.04em; color: #fff; line-height: 1; }
+  .big small { font-size: 50px; color: #64748B; font-weight: 700; }
+  .stat-label { font-size: 24px; color: #94A3B8; margin-top: 12px; line-height: 1.4; }
+  ul.ticks { list-style: none; }
+  ul.ticks li { font-size: 26px; color: #CBD5E1; padding: 12px 0 12px 46px; position: relative; line-height: 1.4; }
+  ul.ticks li::before { content: "✓"; position: absolute; left: 0; top: 10px; width: 32px; height: 32px; border-radius: 9px; background: rgba(22,163,74,.18); color: #4ADE80; display: grid; place-items: center; font-size: 20px; font-weight: 700; }
+  .tag { display: inline-block; font: 600 20px "JetBrains Mono", monospace; padding: 8px 16px; border-radius: 10px; background: rgba(37,99,235,.16); color: #93C5FD; margin: 0 10px 12px 0; }
+  .callout { position: absolute; background: #fff; color: #0F172A; border-radius: 14px; padding: 14px 20px; font-size: 20px; font-weight: 600; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+  .callout::before { content: ""; position: absolute; width: 14px; height: 14px; background: var(--fail); border-radius: 50%; left: -7px; top: 50%; margin-top: -7px; box-shadow: 0 0 0 6px rgba(220,38,38,.3); }
+  table.domains { width: 100%; border-collapse: separate; border-spacing: 0 18px; }
+  table.domains td { background: rgba(15,23,42,.8); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 28px 30px; font-size: 23px; color: #CBD5E1; vertical-align: top; line-height: 1.45; }
+  table.domains td:first-child { border-left: 1px solid var(--line); border-radius: 20px 0 0 20px; width: 360px; }
+  table.domains td:last-child { border-right: 1px solid var(--line); border-radius: 0 20px 20px 0; width: 280px; text-align: right; }
+  table.domains b { color: #fff; font-size: 30px; display: block; }
+  .stack { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 40px; }
+  .stack div { border: 1px solid var(--line); background: rgba(15,23,42,.75); border-radius: 18px; padding: 26px; }
+  .stack small { display: block; font: 600 16px "JetBrains Mono", monospace; color: #60A5FA; text-transform: uppercase; letter-spacing: .1em; }
+  .stack span { display: block; font-size: 26px; font-weight: 700; color: #fff; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+{% macro window(src, url, style='', bleed=False) -%}
+<div class="window{{ ' bleed' if bleed }}" style="{{ style }}"><div class="bar"><i style="background:#EF4444"></i><i style="background:#F59E0B"></i><i style="background:#22C55E"></i><span>{{ url }}</span></div><img src="{{ src }}" alt=""></div>
+{%- endmacro %}
+{% macro foot(n) -%}
+<div class="brand"><img src="{{ logo }}" alt="">QA Pilot</div><div class="num">{{ '%02d'|format(n) }} / 12</div>
+{%- endmacro %}
+
+<!-- 1 Cover -->
+<section class="slide" id="s1">
+  <div class="kicker">Case study · AI QA automation</div>
+  <div style="display:flex;align-items:center;gap:34px;margin-top:40px">
+    <img src="{{ logo }}" style="width:130px;height:130px" alt="">
+    <h1>QA Pilot</h1>
+  </div>
+  <p class="lead" style="margin-top:34px;font-size:38px;max-width:1300px">Give it a URL. It learns the app, writes the tests, runs them, and reports the bugs.</p>
+  <div style="margin-top:34px"><span class="tag">AI</span><span class="tag">QA Automation</span><span class="tag">Selenium</span><span class="tag">Python</span><span class="tag">Claude</span></div>
+  <div style="margin-top:30px;font-size:24px;color:#CBD5E1"><b style="color:#fff">{{ author }}</b> · <span style="color:#94A3B8">{{ role }}</span></div>
+  {{ window(img.run_overview, 'localhost:8000 · Run overview', 'position:absolute;left:330px;top:700px;width:1380px;transform:rotate(-2deg)', bleed=True) }}
+</section>
+
+<!-- 2 Challenge -->
+<section class="slide" id="s2">
+  <div class="kicker">The challenge</div>
+  <h2>Small teams ship web apps<br>nobody really tested.</h2>
+  <p class="lead">Manual QA is slow and expensive, test suites take weeks to write, and the bug reports that do arrive are vague.</p>
+  <div class="cards" style="grid-template-columns:repeat(3,1fr);margin-top:70px">
+    <div class="card"><div class="icon" style="background:rgba(245,158,11,.16)">⏱</div><h3>Slow and costly</h3><p>Clicking through every role and every form before each release takes days — so it gets skipped.</p></div>
+    <div class="card"><div class="icon" style="background:rgba(220,38,38,.16)">🕳</div><h3>Gaps nobody sees</h3><p>Permission holes, wrong totals and broken state rules hide in screens that only some roles reach.</p></div>
+    <div class="card"><div class="icon" style="background:rgba(37,99,235,.18)">❓</div><h3>“It doesn’t work”</h3><p>Bug reports without steps, data or evidence cost developers hours to reproduce.</p></div>
+  </div>
+  {{ foot(2) }}
+</section>
+
+<!-- 3 Solution -->
+<section class="slide" id="s3">
+  <div class="kicker">The solution</div>
+  <h2>An AI QA engineer that runs<br>on your own computer.</h2>
+  <p class="lead">QA Pilot explores the app like a new tester, writes down what it should do, tests it in a real browser and proves every bug it reports.</p>
+  <div class="stages">
+    {% for n, t, p in [('①','Explore','Every page, form and role, with automatic checks'),('②','Understand','Industry, roles, modules and records'),('③','Site model','A knowledge graph of the whole app'),('④','Requirements','Stories, workflows and business rules'),('⑤','Test design','13 techniques, reviewed by a person'),('⑥','Execute','AI agent + rule runner in Chrome'),('⑦','Verify','Re-runs, Python recalculation, evidence'),('⑧','Report','PDF, Excel, CSV, pytest suite')] %}
+    <div class="stage"><b>{{ n }}</b><h4>{{ t }}</h4><p>{{ p }}</p></div>
+    {% endfor %}
+  </div>
+  <p class="lead" style="margin-top:46px;font-size:26px;color:#94A3B8">100% local · no database · your data stays in a folder · the only external call is the Claude API.</p>
+  {{ foot(3) }}
+</section>
+
+<!-- 4 Any industry -->
+<section class="slide" id="s4">
+  <div class="kicker">Works on any industry</div>
+  <h2>Three very different apps.<br>No hints given.</h2>
+  <table class="domains">
+    {% for a in apps %}
+    <tr><td><b>{{ a.name }}</b>{{ a.detected }}</td><td>{{ a.inferred }}</td><td><span style="font-size:52px;font-weight:800;color:#fff">{{ a.found }}<span style="color:#64748B;font-size:30px">/{{ a.total }}</span></span><br>planted bugs found</td></tr>
+    {% endfor %}
+  </table>
+  {{ foot(4) }}
+</section>
+
+<!-- 5 Engine -->
+<section class="slide" id="s5">
+  <div class="kicker">Inside the engine</div>
+  <h2>It builds a map of the app<br>before it tests anything.</h2>
+  <div style="display:grid;grid-template-columns:1fr 430px;gap:50px;margin-top:20px">
+    {{ window(img.site_model, 'Site knowledge graph') }}
+    <ul class="ticks">
+      <li>Roles, screens, records and flows in one graph</li>
+      <li>Which role reaches which screen — the base of the permission matrix</li>
+      <li>Domain packs for 12 industries, plus Claude for the details</li>
+      <li>Requirements and business rules a person confirms</li>
+    </ul>
+  </div>
+  {{ foot(5) }}
+</section>
+
+<!-- 6 Test design -->
+<section class="slide" id="s6">
+  <div class="kicker">Test design</div>
+  <h2>Real test cases, with data<br>and expected values.</h2>
+  <div style="display:grid;grid-template-columns:430px 1fr;gap:50px;margin-top:20px">
+    <div>
+      {% for t in ['Smoke','CRUD · E2E','Validation','Boundary values','Equivalence classes','State transitions','Permissions','Data integrity','Business rules','Responsive · Accessibility'] %}<span class="tag" style="font-size:19px">{{ t }}</span>{% endfor %}
+      <p class="lead" style="font-size:24px;margin-top:22px">Business rules come with computed results — <i>fee 120.00 at 50 % coverage → patient pays 60.00</i> — and are re-checked in Python after the run.</p>
+    </div>
+    {{ window(img.test_cases, 'Test cases · review and approve') }}
+  </div>
+  {{ foot(6) }}
+</section>
+
+<!-- 7 Live -->
+<section class="slide" id="s7">
+  <div class="kicker">Live execution</div>
+  <h2>Watch it test, step by step.</h2>
+  {{ window(img.live, 'Live Run Viewer', 'margin:10px auto 0;width:1240px') }}
+  {{ foot(7) }}
+</section>
+
+<!-- 8 Bug report -->
+<section class="slide" id="s8">
+  <div class="kicker">Bug reports developers love</div>
+  <h2>Proven, reproducible,<br>with the evidence attached.</h2>
+  {{ window(img.bug, 'Bug detail', 'width:1020px;margin-top:10px') }}
+  <div class="callout" style="left:1170px;top:450px">Reproduced 3/3 · confidence</div>
+  <div class="callout" style="left:1170px;top:560px">Annotated screenshot</div>
+  <div class="callout" style="left:1170px;top:670px">Expected vs actual</div>
+  <div class="callout" style="left:1170px;top:780px">Steps with real data</div>
+  <div class="callout" style="left:1170px;top:890px">10–25 s clip + full video</div>
+  <div class="callout" style="left:1170px;top:1000px">One-click replay</div>
+  {{ foot(8) }}
+</section>
+
+<!-- 9 Engineering -->
+<section class="slide" id="s9">
+  <div class="kicker">Engineering highlights</div>
+  <h2>Built to be trusted.</h2>
+  <div class="cards" style="grid-template-columns:1fr 1fr;margin-top:30px;gap:22px">
+    {% for t, p in [('Agent loop','One action per Claude turn, an indexed element list plus screenshot, working memory and loop detection.'),('Self-healing replay','Every agent run becomes a replay script with multi-strategy locators; broken locators hand back to the agent.'),('Re-run verification','Failures run again: 3/3 confirmed, 1/3 flaky → needs review. Rule numbers re-computed in Python.'),('Permission matrix','Expected access from each role’s menus vs what direct URLs really allow — holes in red.'),('Privacy & safety','Safe Mode guard on every click, encrypted credentials, PII blur, authorization record.'),('Local, file-based','No database: atomic JSON writes, file locks, schema versions — zip a project and move it.')] %}
+    <div class="card" style="padding:28px 32px"><h3 style="margin-top:0">{{ t }}</h3><p>{{ p }}</p></div>
+    {% endfor %}
+  </div>
+  {{ foot(9) }}
+</section>
+
+<!-- 10 Results -->
+<section class="slide" id="s10">
+  <div class="kicker">Results · measured with scripts/benchmark.py</div>
+  <h2>{{ totals.found }} of {{ totals.total }} planted bugs found.</h2>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:50px">
+    <div class="card"><div class="big">{{ totals.rate }}<small>%</small></div><div class="stat-label">detection rate across three demo apps ({{ totals.found }}/{{ totals.total }})</div></div>
+    <div class="card"><div class="big">{{ totals.fp }}</div><div class="stat-label">false positives in {{ totals.reported }} bug reports</div></div>
+    <div class="card"><div class="big" style="font-size:100px">${{ totals.cost }}</div><div class="stat-label">total Claude cost for all three apps, end to end</div></div>
+  </div>
+  <table class="domains" style="margin-top:30px">
+    {% for a in apps %}
+    <tr><td style="width:380px"><b style="font-size:26px">{{ a.name }}</b></td><td>{{ a.found }}/{{ a.total }} planted · {{ a.genuine }} other genuine issues · {{ a.fp }} false positive{{ '' if a.fp == 1 else 's' }}</td><td>{{ a.tests }} tests · ${{ a.cost }}</td></tr>
+    {% endfor %}
+  </table>
+  <p style="font-size:19px;color:#64748B;margin-top:6px">Planted bugs are listed in answer keys the engine never reads; each match was checked and is listed in docs/benchmarks.json.</p>
+  {{ foot(10) }}
+</section>
+
+<!-- 11 Tech -->
+<section class="slide" id="s11">
+  <div class="kicker">Tech stack</div>
+  <h2>Proven tools, put together carefully.</h2>
+  <div class="stack">
+    {% for k, v in [('Browser','Selenium 4'),('Protocol','Chrome DevTools'),('AI','Anthropic Claude'),('Backend','Python · FastAPI'),('Live updates','Server-Sent Events'),('Models','Pydantic 2'),('Graph','NetworkX · React Flow'),('Frontend','React 19 · TypeScript'),('Styling','Tailwind · shadcn/ui'),('Accessibility','axe-core'),('Reports','Chrome PDF · openpyxl'),('Video','ffmpeg'),('Tests','pytest · Vitest'),('Quality','Ruff · mypy · CI'),('Storage','JSON files, no DB'),('Platforms','Windows · macOS · Linux')] %}
+    <div><small>{{ k }}</small><span>{{ v }}</span></div>
+    {% endfor %}
+  </div>
+  {{ foot(11) }}
+</section>
+
+<!-- 12 CTA -->
+<section class="slide" id="s12" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+  <img src="{{ logo }}" style="width:120px;height:120px" alt="">
+  <h2 style="font-size:84px;margin-top:40px">Want automated QA<br>for your web app?</h2>
+  <p class="lead" style="margin:10px auto 0">I build QA automation and custom AI testing tools — from Selenium suites to engines like this one.</p>
+  <div style="margin-top:60px;font-size:40px;font-weight:800;color:#fff">{{ author }}</div>
+  <div style="font-size:26px;color:#94A3B8;margin-top:8px">{{ role }}</div>
+  <div style="margin-top:44px;display:flex;gap:20px;justify-content:center">
+    <span class="pill" style="color:#86EFAC;border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.12)">Hire me on Upwork</span>
+    <span class="pill" style="color:#93C5FD;border-color:rgba(59,130,246,.5);background:rgba(59,130,246,.12)">github.com/YOUR_USERNAME/qa-pilot</span>
+  </div>
+</section>
+
+</body>
+</html>

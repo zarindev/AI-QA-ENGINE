@@ -10,11 +10,11 @@ an update here, and a commit (`feat(phase-N): ...`).
 | 1. Foundation + Explore | Scaffold, config, file storage layer + tests, Claude client, Chrome driver + CDP logs, DOM snapshot, locators, login (credentials / manual session), crawler (public + per role + SPA click discovery), automatic checks, run state, CLI, basic HTML report | **Done** |
 | 2. Understand + Site Model | Classifier, Domain Packs, model builder (NetworkX), FastAPI + React shell, SSE, job executor, onboarding, Site Profile + Site Model screens, setup/start scripts, committed static build, **3 demo apps** | **Done** |
 | 3. Requirements + Test Design | Stories, workflows, rules + confirm flow, generator, test data, review UI, requirements PDF, Excel test cases, Gherkin | **Done** |
-| 4. Execute + Verify | Agent loop, actions, recorder, replayer, self-healing, judge, re-runs, severity, dedupe, clips, annotated screenshots, Live Run Viewer, Results + Bugs | **Built** — full demo runs paused (API credits ran out) |
-| 5. Advanced checks | Permission matrix, data integrity, business rules, multi-viewport, axe, quality score, heatmap, regression, Bug Replay, privacy blur | — |
-| 6. Reporting | All exports (Excel, PDFs, CSV, Gherkin, pytest suite, traceability) | — |
-| 7. Public repo polish | README, CONTRIBUTING, SECURITY, TROUBLESHOOTING, CI, templates, fresh-clone test, pre-commit secret check | — |
-| 8. Showcase package | Benchmarks, screenshots, samples, case study, Upwork + social images | — |
+| 4. Execute + Verify | Agent loop, actions, recorder, replayer, self-healing, judge, re-runs, severity, dedupe, clips, annotated screenshots, Live Run Viewer, Results + Bugs | **Done** |
+| 5. Advanced checks | Permission matrix, data integrity, business rules, multi-viewport, axe, quality score, heatmap, regression, Bug Replay, privacy blur | **Done** |
+| 6. Reporting | All exports (Excel, PDFs, CSV, Gherkin, pytest suite, traceability) | **Done** |
+| 7. Public repo polish | README, CONTRIBUTING, SECURITY, TROUBLESHOOTING, CI, templates, fresh-clone test, pre-commit secret check | **Done** |
+| 8. Showcase package | Benchmarks, screenshots, samples, case study, Upwork + social images | **Done** |
 
 ## Phase 1 — Foundation + Explore (done)
 
@@ -139,7 +139,7 @@ them first. Estimated cost to *execute* all approved cases: $4–6 per app (Phas
 
 **Tests:** 91 Python tests (incl. review API flow, Excel/Gherkin/PDF exports), 4 Vitest tests.
 
-## Phase 4 — Execute + Verify (built; full runs to finish)
+## Phase 4 — Execute + Verify (done)
 
 **Built**
 - **Browser agent** (`app/execute/agent.py`): observe → decide → act, one strict tool call per Claude turn (click, type,
@@ -163,22 +163,19 @@ them first. Estimated cost to *execute* all approved cases: $4–6 per app (Phas
   attempts, step timeline with screenshots, video), Bugs (severity board / table, Needs-review queue), Bug detail
   (all fields, annotated screenshot, clip, video, logs, status, one-click Replay in a visible browser).
 
-**Verified on the demo apps (2026-10-05, before the API credits ran out)**
+**Verified on the demo apps (2026-10-05, complete runs, scored by `scripts/benchmark.py`)**
 
-| App | Tests run | Planted bugs confirmed so far | Other real bugs | False positives |
-|---|---|---|---|---|
-| CarePoint Clinic | 32 of 71 | 9 of 15: CL-01, 02, 03, 04, 09, 10, 11, 12, 13 | empty-filter counter, dashboard count mismatch | 1 (parallel-test data) |
-| DriveNow Rentals | 20 of 60 | 4 of 15: CR-01, 04, 07, 13 | colour contrast | 0 |
-| StockRoom POS | 0 of 63 | — | — | — |
+| App | Tests run | Planted bugs found | Missed | False positives | Claude cost |
+|---|---|---|---|---|---|
+| CarePoint Clinic | 71 | 13/15 | CL-07, CL-14 | 2 of 23 | $5.88 |
+| DriveNow Rentals | 60 | 15/15 (CR-02 only in Needs review) | — | 1 of 20 | $4.87 |
+| StockRoom POS | 63 | 13/15 (SH-01, SH-14 only in Needs review) | SH-06, SH-12 | 6 of 24 | $6.09 |
 
-Example: the agent registered a 50 %-coverage patient, booked and completed a visit and reported
-“patient pays $120.00, expected $60.00” (CL-02), reproduced 3/3, critical, with annotated screenshot and clip.
-Agent cost ≈ $0.08–0.15 per test; replay re-runs ≈ $0.03.
+Runs were interrupted once by an empty credit balance and resumed (finished tests kept). Example: the agent
+registered a 50 %-coverage patient, completed a visit and reported “patient pays $120.00, expected $60.00” (CL-02),
+reproduced 3/3, critical, with annotated screenshot and clip.
 
-**To finish Phase 4:** add API credits, then resume the three runs (`POST …/execute {"resume": true}`) and record the
-final per-app numbers. Benchmarks for the README come from Phase 8 only.
-
-## Phase 5 — Advanced checks (built)
+## Phase 5 — Advanced checks (done)
 
 - **Quality Score** with sub-scores and documented formula (docs/ARCHITECTURE.md), stored per run, shown in the run list.
 - **Coverage heatmap**, **Permission matrix** (holes highlighted, evidence on hover), **Regression comparison**
@@ -189,7 +186,7 @@ final per-app numbers. Benchmarks for the README come from Phase 8 only.
 - **Multi-viewport runs** (desktop / tablet / phone picker next to *Run approved tests*).
 - API: `GET …/quality`, `GET …/permissions`, `GET …/compare?base=`, `PATCH /api/projects/{slug}`.
 
-## Phase 6 — Reporting (built)
+## Phase 6 — Reporting (done)
 
 Run → *Reports* (export centre), or `POST /api/projects/{slug}/runs/{id}/exports/{kind}`. Files land in the run's
 `exports/` folder.
@@ -212,8 +209,31 @@ ran against the demo app after a data reset: **49 passed, 9 failed, 2 skipped** 
 had reported (accessibility violations, missing 10 % weekly discount, `/admin/revenue` open to agent and customer,
 `/calendar` overflowing at 768 px); the 2 skips are tests that were not recorded.
 
+## Phase 7 — Public repo polish (done)
+
+README (hero banner, badges, quick start, Mermaid diagram, screenshots, samples, benchmarks, FAQ, author card),
+CONTRIBUTING, SECURITY, CHANGELOG, docs/LEGAL, docs/TROUBLESHOOTING, docs/TEST_TECHNIQUES, CI workflow (secret check,
+Ruff, Black, mypy, offline pytest, frontend typecheck/lint/tests/build), issue and PR templates, secret-check
+pre-commit hook enabled by setup, `workspace/logs/qa-pilot.log`, CLI `review` / `execute` / `export`,
+`scripts/seed_demo.py`. Fixed: a second QA Pilot process opening the same workspace no longer marks live runs as
+interrupted (20 s heartbeat; 90 s staleness).
+
+## Phase 8 — Showcase package (done)
+
+- `scripts/benchmark.py` → `docs/benchmarks.json` (Claude-assisted matching with reasons, human corrections in
+  `docs/benchmark_overrides.json`): **41/45 planted bugs (91 %), 9 false positives in 67 reports, $16.84**.
+- `scripts/capture_screenshots.py` → `docs/assets/screenshots/` (17 screens dark + 3 light, 2×) plus the live viewer.
+- `docs/samples/` — QA report PDF, single-bug PDF, Excel, Jira CSV, pytest suite (DriveNow Rentals run).
+- `docs/case-study/` — `case-study.html` (12 slides, 1600×1200, from `slides.html.j2`), `CASE_STUDY.md`,
+  `UPWORK_LISTING.md`; `scripts/export_case_study.py` → PDF, slide PNGs, Upwork thumbnail + 6 gallery images (PNG +
+  JPG < 2 MB), GitHub social preview 1280×640, LinkedIn/X 1200×675 — sizes and text overflow verified.
+
+**Manual to-dos for the author:** record `docs/assets/demo.gif`; replace `YOUR_USERNAME` / `YOUR_PROFILE`
+placeholders; upload `export/social/github-social-preview.png` in GitHub → Settings → Social preview; revoke the API
+key that was pasted into the chat during development.
+
 ## How to resume
 
 ```
-Continue QA_PILOT_BUILD_PROMPT.md: finish the Phase 4 demo runs (resume), then Phase 5. Check git log and docs/PROGRESS.md for what's done.
+All 8 phases are complete. Re-run benchmarks with `python scripts/benchmark.py full` after engine changes.
 ```

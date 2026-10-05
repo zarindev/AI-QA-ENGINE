@@ -1,0 +1,466 @@
+﻿Summary,Issue Type,Priority,Description,Labels,Labels,Component,External ID
+Agent can open restricted page /admin/revenue by direct URL,Bug,Highest,"/admin/revenue is not in the agent menu, but typing its URL opens it with full content.
+
+h3. Preconditions
+* Logged in as agent
+
+h3. Steps to reproduce
+# Log in as agent
+# Open /admin/revenue by typing its URL in the address bar
+
+h3. Expected
+Access is refused (403, redirect or error) for this role.
+
+h3. Actual
+The page opened for agent: HTTP 200, title “Revenue · DriveNow Rentals”, headings: Revenue report | Collected revenue per car Also reproduced as customer.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/admin/revenue
+Reproducibility: 3/3 · severity: critical (Broken access control: a role reaches a screen meant for other roles that exposes privileged data or actions.)
+Test cases: TC-INV-001, TC-INV-002
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-001/annotated.png, artifacts/bugs/BUG-001/clip.mp4",qa-pilot,severity-critical,Invoice,20261005-002110/BUG-001
+Customer can view another customer's booking via /bookings/{id} (IDOR),Bug,Highest,"Signed in as customer Liam O'Brien, opening /bookings/2 returns HTTP 200 and displays booking B-0002 belonging to Mei Tanaka, including her email, car, dates, price and invoice INV-0002. The booking list is correctly filtered to own bookings, but the detail URL has no ownership check. Reproduced 3/3.
+
+h3. Preconditions
+* Customer A (Liam O'Brien) is signed in
+* A booking belonging to another customer exists (B-0002, id 2, Mei Tanaka)
+
+h3. Steps to reproduce
+# Sign in as customer Liam O'Brien
+# Click ""Bookings"" (/bookings); verify only own bookings are listed (B-0010, B-0004, B-0007, B-0001)
+# Navigate directly to http://localhost:8102/bookings/2
+# Observe the page content and HTTP status
+
+h3. Expected
+Opening another customer's /bookings/{id} is refused with 403/404 and no booking data is shown.
+
+h3. Actual
+http://localhost:8102/bookings/2 returned HTTP 200 and showed booking B-0002 for Mei Tanaka (mei@drivenow.test) with car, dates, price and invoice INV-0002, to customer Liam O'Brien.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: customer
+URL: http://localhost:8102/bookings/2
+Reproducibility: 3/3 · severity: critical (Security/privacy failure: any customer can read other customers' personal data (name, email) and financial data (price, invoice) by changing the id in the URL.)
+Test cases: TC-BOO-027
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-002/annotated.png, artifacts/bugs/BUG-002/clip.mp4",qa-pilot,severity-critical,Bookings,20261005-002110/BUG-002
+7-day booking gets no 10% weekly discount; total $840.00 instead of $756.00,Bug,High,"A booking of Tesla Model 3 ($120/day) from 2026-10-21 to 2026-10-28 is recorded as 7 days with subtotal $840.00, but the weekly discount is −$0.00 and the total is $840.00. The 10% weekly discount should apply from exactly 7 days. The 6-day case behaved as expected (discount $0.00, total $720.00). The 8-day case was not reached because the test stopped at the 7-day failure.
+
+h3. Preconditions
+* Tesla Model 3 ($120.00/day) is available for 7 consecutive days in the future
+* Logged in as agent
+* Customer Mei Tanaka exists
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings/new
+# Select Car: Tesla Model 3 — $120.00/day
+# Select Customer: Mei Tanaka
+# Enter pickup_date 2026-10-21 and return_date 2026-10-28 (7 days)
+# Click Confirm booking
+# Observe the booking page (e.g. /bookings/27): subtotal, weekly discount and total
+
+h3. Expected
+7 days: subtotal 840.00, discount 84.00 (10%), total 756.00.
+
+h3. Actual
+Days 7, Subtotal $840.00, Weekly discount −$0.00, Total $840.00. The confirmation message says 'Estimated total $840.00'.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/27
+Reproducibility: 3/3 · severity: major (Pricing is wrong: customers are charged $84.00 too much on every 7-day booking, and there is no workaround on the booking screen. The error is a fixed 10% overcharge at the threshold boundary.)
+Test cases: TC-BOO-022
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-003/annotated.png, artifacts/bugs/BUG-003/clip.mp4",qa-pilot,severity-major,Bookings / Pricing,20261005-002110/BUG-003
+Add car accepts negative Daily rate (-5) and saves car at $-5.00,Bug,High,"On the Add car form (/cars/new), entering -5 in 'Daily rate ($)' is accepted. The app shows 'Car added to the fleet.' and the car detail page /cars/10 displays Daily rate $-5.00. No validation message is shown. Reproduced 3/3.
+
+h3. Preconditions
+* Logged in as admin
+* No existing car with the plate QAP-NJ-139X
+
+h3. Steps to reproduce
+# Open http://localhost:8102/cars/new
+# Enter Make: QAP_David Shaw
+# Enter Model: QAP_William Heath
+# Enter Plate: QAP-NJ-139X
+# Enter Seats: 3 (Category: Economy)
+# Enter Daily rate ($): -5
+# Click 'Save car'
+# Observe the message and the resulting page
+
+h3. Expected
+A daily rate of -5 is rejected with a validation message and nothing is saved.
+
+h3. Actual
+The app shows 'Car added to the fleet.' and redirects to /cars/10, where Daily rate is listed as $-5.00.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: admin
+URL: http://localhost:8102/cars/10
+Reproducibility: 3/3 · severity: major (A negative daily rate is saved to the fleet, which is a money-related field. This can corrupt rental pricing and billing, and the invalid data is persisted without any error.)
+Test cases: TC-CAR-003
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-004/annotated.png, artifacts/bugs/BUG-004/clip.mp4",qa-pilot,severity-major,Fleet / Cars,20261005-002110/BUG-004
+Add car form accepts Daily rate of 0 and saves car at $0.00,Bug,High,"On the Add car form (/cars/new), entering a Daily rate of 0 is accepted. The car is saved with Daily rate $0.00 and the success message ""Car added to the fleet."" is shown. Only positive rates should be accepted. Reproduced 3/3 times. Only the 0 value was exercised before the failure; -10 and 0.01 were not reached in the evidence.
+
+h3. Preconditions
+* Signed in as admin
+
+h3. Steps to reproduce
+# Open http://localhost:8102/cars/new
+# Enter Make: QAP
+# Enter Model: Test
+# Enter Plate: QAP-RATE0
+# Enter Daily rate ($): 0
+# Click ""Save car""
+
+h3. Expected
+The form rejects a Daily rate of 0 with a validation error. The car is not saved, and only positive rates are accepted.
+
+h3. Actual
+The car QAP-RATE0 is saved and the app redirects to http://localhost:8102/cars/14. The page shows Daily rate $0.00 and the message ""Car added to the fleet.""
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: admin
+URL: http://localhost:8102/cars/14
+Reproducibility: 3/3 · severity: major (A car can be added to the fleet with a $0.00 daily rate, which can lead to free or incorrectly priced rentals. There is no UI-level guard, and the bad record must be fixed manually after saving.)
+Test cases: TC-FLE-003
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-005/annotated.png, artifacts/bugs/BUG-005/clip.mp4",qa-pilot,severity-major,Fleet / Cars,20261005-002110/BUG-005
+Booking accepted for car in maintenance (Kia Picanto DN-106),Bug,High,"An agent can create a booking for a car that admin sent to maintenance. The app confirmed the booking and created B-0010 with status reserved instead of refusing it. Reproduced 3/3.
+
+h3. Preconditions
+* Logged in as agent
+* Admin has sent one car (Kia Picanto DN-106) to maintenance
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings/new
+# Select Car = ""Kia Picanto — $35.00/day"" (the car in maintenance)
+# Select Customer = ""Mei Tanaka""
+# Enter pickup_date = 2026-10-07 (today + 2 days)
+# Enter return_date = 2026-10-08 (today + 3 days)
+# Click ""Confirm booking""
+
+h3. Expected
+Booking is refused with an error message and no booking is created for the maintenance car.
+
+h3. Actual
+Redirected to http://localhost:8102/bookings/10 with message ""Booking confirmed. Estimated total $35.00."" Booking B-0010 was created for Kia Picanto DN-106 with status reserved.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/10
+Reproducibility: 3/3 · severity: major (A core booking rule is broken: a car out of service can be reserved, which risks customers being promised an unavailable vehicle. No workaround is apparent besides manual checking of car status by agents.)
+Test cases: TC-BOO-018
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-006/annotated.png, artifacts/bugs/BUG-006/clip.mp4",qa-pilot,severity-major,Bookings,20261005-002110/BUG-006
+Booking accepted when pickup date equals existing booking's return date,Bug,High,"Creating a booking for Hyundai Tucson starting 2026-10-17 was confirmed even though an existing booking for the same car ends on 2026-10-17. The inclusive overlap check on boundary dates is not enforced. Reproduced in 1 of 3 runs.
+
+h3. Preconditions
+* Logged in as agent
+* Hyundai Tucson has a reserved booking from 2026-10-15 to 2026-10-17 (customer Mei Tanaka)
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings/new
+# Select Car ""Hyundai Tucson — $70.00/day""
+# Select Customer ""Mei Tanaka""
+# Enter pickup_date 2026-10-15 and return_date 2026-10-17
+# Click ""Confirm booking"" (booking B-0012 is created)
+# Open /bookings/new again
+# Select Car ""Hyundai Tucson — $70.00/day"" and Customer ""Mei Tanaka""
+# Enter pickup_date 2026-10-17 and return_date 2026-10-19
+# Click ""Confirm booking""
+
+h3. Expected
+The second booking is refused as overlapping, because pickup 2026-10-17 falls on the existing booking's return date 2026-10-17 (inclusive overlap check).
+
+h3. Actual
+The booking was accepted. The app redirected to http://localhost:8102/bookings/13 with the message ""Booking confirmed. Estimated total $140.00."" Booking B-0013 (Tucson, 2026-10-17 to 2026-10-19) now overlaps the existing 10-15 to 10-17 reservation. Reproducibility 1/3.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/13
+Reproducibility: 1/3 · severity: major (Double-booking the same car on a shared boundary date breaks a core booking rule and can leave the car committed to two customers, with no visible workaround for the agent. Reproduces only intermittently (1/3).)
+Test cases: TC-BOO-019
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-007/annotated.png, artifacts/bugs/BUG-007/clip.mp4",qa-pilot,severity-major,Bookings,20261005-002110/BUG-007
+Booking accepted with return date before pickup; negative days and total,Bug,High,"On /bookings/new, submitting a return date one day before the pickup date is not rejected. Booking B-0017 was created and shown as confirmed with rental days -1 and total $-42.00. The past-pickup validation does fire (""Pickup date cannot be in the past.""), but no check exists for return earlier than pickup. Reproduced 3/3.
+
+h3. Preconditions
+* Signed in as agent
+* Cars and customers exist (Toyota Corolla at $42.00/day, customer Mei Tanaka)
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings/new
+# Select Car ""Toyota Corolla — $42.00/day""
+# Select Customer ""Mei Tanaka""
+# Enter pickup_date 2030-06-15
+# Enter return_date 2030-06-14
+# Click ""Confirm booking""
+
+h3. Expected
+Form is rejected with an error message that return date cannot be before pickup date, and no booking is created.
+
+h3. Actual
+Redirected to http://localhost:8102/bookings/17 with ""Booking confirmed. Estimated total $-42.00."" Booking B-0017 was created with pickup 2030-06-15, return 2030-06-14, rental days -1, total $-42.00.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/17
+Reproducibility: 3/3 · severity: major (A core workflow (booking creation) accepts invalid dates and persists a confirmed booking with a negative rental duration and a negative total ($-42.00), which corrupts billing data. A workaround exists (agent enters correct dates), but the system does not prevent the error.)
+Test cases: TC-BOO-024, TC-BOO-004, TC-BOO-008
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-008/annotated.png, artifacts/bugs/BUG-008/clip.mp4",qa-pilot,severity-major,Bookings,20261005-002110/BUG-008
+"Booking estimate is $48.00 instead of 96.00 for 2-day Golf booking (pickup 10-08, return 10-09)",Bug,High,"Creating a booking for Volkswagen Golf ($48.00/day) with pickup 2026-10-08 and return 2026-10-09 results in B-0029 with 1 rental day and an estimated total of $48.00. The test expected 96.00 (2 days). Reproduced in 1 of 3 runs, and the test assumed today's date without confirming it.
+
+h3. Preconditions
+* Logged in as agent
+* Volkswagen Golf is free for the requested dates
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings/new
+# Select Car 'Volkswagen Golf — $48.00/day'
+# Select Customer 'Liam O'Brien'
+# Enter pickup_date 2026-10-08
+# Enter return_date 2026-10-09
+# Click 'Confirm booking'
+# Observe redirect to /bookings/29 with message 'Booking confirmed. Estimated total $48.00.'
+
+h3. Expected
+Booking reserved with estimate 96.00 (2 days x $48.00) for the dates from today+3 to today+4, consistent across list, calendar, car history and dashboard.
+
+h3. Actual
+Booking B-0029 reserved with 1 rental day and total $48.00 (pickup 2026-10-08, return 2026-10-09). Message: 'Booking confirmed. Estimated total $48.00.'
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/29
+Reproducibility: 1/3 · severity: major (Wrong rental price estimate on a core booking workflow affects money charged to customers; no workaround is visible on the form. Reproducibility is low (1/3) and the expected day-count rule is not confirmed, which limits certainty.)
+Test cases: TC-BOO-026
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-009/annotated.png, artifacts/bugs/BUG-009/clip.mp4",qa-pilot,severity-major,Bookings,20261005-002110/BUG-009
+Broken link: page returns HTTP 404 — /terms-and-conditions,Bug,High,"http://localhost:8102/terms-and-conditions responded with status 404. Linked from http://localhost:8102/.
+
+h3. Steps to reproduce
+# Log in as admin
+# Open http://localhost:8102/terms-and-conditions
+
+h3. Expected
+The page and its resources load without errors.
+
+h3. Actual
+http://localhost:8102/terms-and-conditions responded with status 404. Linked from http://localhost:8102/.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: admin, agent, customer
+URL: http://localhost:8102/terms-and-conditions
+Reproducibility: seen on 3 page(s) / role(s) · severity: major (Found by QA Pilot's automatic checks while exploring.)
+Test cases: —
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-010/annotated.png, artifacts/bugs/BUG-010/clip.mp4",qa-pilot,severity-major,Terms-And-Conditions,20261005-002110/BUG-010
+Cancelled booking can be handed over; status changes to picked up,Bug,High,"On the booking detail page of cancelled booking B-0008, a ""Hand over car"" button is shown. Clicking it succeeds with ""Car handed over to the customer."" and the status changes from cancelled to picked up. The cancelled to picked up transition should be blocked. Reproduced 3/3.
+
+h3. Preconditions
+* Logged in as agent
+* A booking with status cancelled exists (B-0008)
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings
+# Click booking ""B-0008"" (href=/bookings/8), status is cancelled
+# Observe that a ""Hand over car"" button is displayed
+# Click ""Hand over car""
+
+h3. Expected
+No ""Hand over car"" option is shown for the cancelled booking B-0008, and any hand over attempt is refused with the status staying cancelled.
+
+h3. Actual
+B-0008 shows a ""Hand over car"" button. Clicking it displays ""Car handed over to the customer."" and the status changes to ""picked up"".
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/8
+Reproducibility: 3/3 · severity: major (An invalid state transition on a core rental workflow: a cancelled booking can be handed over and become picked up, with no workaround in the UI and potential for releasing a car for a cancelled, possibly unpaid booking.)
+Test cases: TC-BOO-016
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-011/annotated.png, artifacts/bugs/BUG-011/clip.mp4",qa-pilot,severity-major,Bookings,20261005-002110/BUG-011
+"Returned booking can be handed over again, status reverts to picked up",Bug,High,"On the detail page of returned booking B-0002 (/bookings/2) a ""Hand over car"" button is available. Clicking it shows ""Car handed over to the customer."" and changes the status from returned to ""picked up"". The out-of-order transition returned -> picked up is not blocked. Reproduced in 2 of 3 runs.
+
+h3. Preconditions
+* Logged in as agent
+* A returned booking exists (B-0002, id 2)
+* A reserved booking exists (B-0011, id 11)
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings?status=returned and confirm B-0002 is listed as returned
+# Open http://localhost:8102/bookings/2
+# Click the ""Hand over car"" button
+# Observe the message and the booking status
+
+h3. Expected
+Hand over on the returned booking is refused (button hidden or an error shown) and the status remains returned.
+
+h3. Actual
+The app showed ""Car handed over to the customer."" and B-0002's status changed to ""picked up"". Reproducibility 2/3.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/2
+Reproducibility: 2/3 · severity: major (An invalid lifecycle transition is accepted and a completed booking is reopened as picked up, corrupting booking status and car availability tracking. Agents can trigger it with one click; there is no obvious workaround besides manual correction.)
+Test cases: TC-BOO-017
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-012/annotated.png, artifacts/bugs/BUG-012/clip.mp4",qa-pilot,severity-major,Bookings,20261005-002110/BUG-012
+"Returned car still shown as ""rented"" on /cars after booking return",Bug,High,"After clicking ""Return car"" on booking B-0009, the app shows ""Car returned and invoice created"", but /cars still lists Toyota Corolla as ""rented"" after reloading. The car status is not updated on return, so the car appears unavailable. Reproduced 3/3.
+
+h3. Preconditions
+* Logged in as agent
+* A picked up booking exists with the car rented (B-0009, Toyota Corolla)
+
+h3. Steps to reproduce
+# Open http://localhost:8102/cars and note Toyota Corolla is ""rented""
+# Open http://localhost:8102/bookings
+# Click booking ""B-0009"" (/bookings/9)
+# Click the ""Return car"" button; message ""Car returned and invoice created."" appears
+# Open http://localhost:8102/bookings/9 to reload the booking
+# Open http://localhost:8102/cars and check the status of Toyota Corolla
+
+h3. Expected
+After the return, Toyota Corolla shows ""available"" on /cars and is free in the calendar.
+
+h3. Actual
+Toyota Corolla still shows ""rented"" on /cars after the return of B-0009 and after reloading, despite the success message ""Car returned and invoice created"".
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/cars
+Reproducibility: 3/3 · severity: major (Return completes and invoice is created, but the car stays ""rented"", so it appears unavailable for new bookings. This is an important fleet workflow with no evident workaround in the UI.)
+Test cases: TC-FLE-006
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-013/annotated.png, artifacts/bugs/BUG-013/clip.mp4",qa-pilot,severity-major,Fleet / Bookings,20261005-002110/BUG-013
+Same-day rental priced as 0 days and $0.00 instead of 1 day and $42.00,Bug,High,"A booking with pickup and return on the same date is accepted but priced with 0 rental days. The confirmation message says 'Estimated total $0.00', and the booking page shows Subtotal $0.00 and Total $0.00 although the daily rate is $42.00. The expected minimum charge is 1 day. The failure reproduced 3/3.
+
+h3. Preconditions
+* Signed in as customer
+* Toyota Corolla is available on today+2 (2026-10-07)
+
+h3. Steps to reproduce
+# Open http://localhost:8102/bookings/new
+# Select Car 'Toyota Corolla — $42.00/day'
+# Enter pickup_date 2026-10-07
+# Enter return_date 2026-10-07 (same as pickup)
+# Click 'Confirm booking'
+# Observe the resulting page http://localhost:8102/bookings/11 (booking B-0011)
+
+h3. Expected
+Booking is accepted with Rental days = 1 (max(1,0)) and an estimated total of $42.00.
+
+h3. Actual
+Booking B-0011 is accepted with the message 'Booking confirmed. Estimated total $0.00.' The booking page shows Rental days 0, Subtotal $0.00, Total $0.00 (daily rate $42.00).
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: customer
+URL: http://localhost:8102/bookings/11
+Reproducibility: 3/3 · severity: major (The core booking price calculation is wrong, so same-day rentals are charged $0.00 instead of $42.00. This is revenue loss, and the customer has no way to correct it.)
+Test cases: TC-BOO-021
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-014/annotated.png, artifacts/bugs/BUG-014/clip.mp4",qa-pilot,severity-major,Bookings,20261005-002110/BUG-014
+JavaScript error on /calendar,Bug,High,"JavaScript error: http://localhost:8102/calendar 80:2 Uncaught ReferenceError: highlightToday is not defined
+
+h3. Steps to reproduce
+# Log in as admin
+# Open /calendar
+# Open the browser console
+
+h3. Expected
+The page loads without errors.
+
+h3. Actual
+JavaScript error: http://localhost:8102/calendar 80:2 Uncaught ReferenceError: highlightToday is not defined Also reproduced as agent. Also reproduced as customer.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: admin
+URL: http://localhost:8102/calendar
+Reproducibility: 3/3 · severity: major (Script error breaks part of the page's behaviour. Raised to major: the same symptom was also found by the automatic checks.)
+Test cases: TC-SMO-001, TC-SMO-002, TC-SMO-003
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-015/annotated.png, artifacts/bugs/BUG-015/clip.mp4",qa-pilot,severity-major,Smoke,20261005-002110/BUG-015
+/calendar overflows horizontally on small screens,Bug,Medium,"At 768px the page is wider than the screen, so users must scroll sideways.
+
+h3. Steps to reproduce
+# Log in as admin
+# Open /calendar
+# Resize the window to 768px wide
+
+h3. Expected
+The page fits the screen width without horizontal scrolling.
+
+h3. Actual
+Content is 348px wider than the 768px screen (horizontal scrolling). Also reproduced as admin. Also reproduced as agent. Also reproduced as customer.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · tablet,mobile · role: admin
+URL: http://localhost:8102/calendar
+Reproducibility: 3/3 · severity: minor (Layout defect on tablet/phone; content is still reachable by scrolling.)
+Test cases: TC-UIX-001, TC-UIX-002, TC-UIX-003
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-016/annotated.png, artifacts/bugs/BUG-016/clip.mp4",qa-pilot,severity-minor,UI,20261005-002110/BUG-016
+/invoices overflows horizontally on small screens,Bug,Medium,"At 390px the page is wider than the screen, so users must scroll sideways.
+
+h3. Steps to reproduce
+# Log in as admin
+# Open /invoices
+# Resize the window to 390px wide
+
+h3. Expected
+The page fits the screen width without horizontal scrolling.
+
+h3. Actual
+Content is 221px wider than the 390px screen (horizontal scrolling). Also reproduced as agent. Also reproduced as customer.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · tablet,mobile · role: admin
+URL: http://localhost:8102/invoices
+Reproducibility: 3/3 · severity: minor (Layout defect on tablet/phone; content is still reachable by scrolling.)
+Test cases: TC-UIX-001, TC-UIX-002, TC-UIX-003
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-017/annotated.png, artifacts/bugs/BUG-017/clip.mp4",qa-pilot,severity-minor,UI,20261005-002110/BUG-017
+Accessibility: Elements must meet minimum color contrast ratio thresholds on /calendar,Bug,Medium,"axe-core reports a critical/serious WCAG violation on /calendar.
+
+h3. Steps to reproduce
+# Log in as admin
+# Open /calendar
+# Run an axe-core / Lighthouse accessibility scan
+
+h3. Expected
+No critical or serious accessibility violations.
+
+h3. Actual
+serious: Elements must meet minimum color contrast ratio thresholds (1×, e.g. .badge:nth-child(3)) Also reproduced as agent. Also reproduced as customer.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: admin
+URL: http://localhost:8102/calendar
+Reproducibility: 3/3 · severity: minor (WCAG 2 A/AA violation that blocks or hinders assistive-technology users.)
+Test cases: TC-ACC2-001, TC-ACC2-002, TC-ACC2-003
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-018/annotated.png, artifacts/bugs/BUG-018/clip.mp4",qa-pilot,severity-minor,Accessibility,20261005-002110/BUG-018
+Accessibility: Form elements must have labels on /bookings/new,Bug,Medium,"axe-core reports a critical/serious WCAG violation on /bookings/new.
+
+h3. Steps to reproduce
+# Log in as agent
+# Open /bookings/new
+# Run an axe-core / Lighthouse accessibility scan
+
+h3. Expected
+No critical or serious accessibility violations.
+
+h3. Actual
+critical: Form elements must have labels (2×, e.g. input[name=""pickup_date""]) Also reproduced as customer.
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: agent
+URL: http://localhost:8102/bookings/new
+Reproducibility: 3/3 · severity: minor (WCAG 2 A/AA violation that blocks or hinders assistive-technology users.)
+Test cases: TC-ACC2-002, TC-ACC2-003
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-019/annotated.png, artifacts/bugs/BUG-019/clip.mp4",qa-pilot,severity-minor,Accessibility,20261005-002110/BUG-019
+Broken image — /cars/{id},Bug,Medium,"Image failed to load: http://localhost:8102/static/tesla-model3.jpg
+
+h3. Steps to reproduce
+# Log in as admin
+# Open http://localhost:8102/cars/4
+
+h3. Expected
+The page and its resources load without errors.
+
+h3. Actual
+Image failed to load: http://localhost:8102/static/tesla-model3.jpg
+
+h3. Environment
+Chrome 154.0.8037.93 · Darwin 25.5.0 · 1440×900 (desktop) · role: admin, agent, customer
+URL: http://localhost:8102/cars/4
+Reproducibility: seen on 3 page(s) / role(s) · severity: minor (Found by QA Pilot's automatic checks while exploring.)
+Test cases: —
+Evidence (in the QA Pilot run folder): artifacts/bugs/BUG-020/annotated.png, artifacts/bugs/BUG-020/clip.mp4",qa-pilot,severity-minor,Cars,20261005-002110/BUG-020

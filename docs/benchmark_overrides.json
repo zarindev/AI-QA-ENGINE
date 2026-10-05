@@ -1,0 +1,11 @@
+{
+  "note": "Corrections made by a person after reading the scorer's matches. scripts/benchmark.py applies them on every scoring run.",
+  "overrides": [
+    {
+      "app": "shop",
+      "planted_id": "SH-06",
+      "found": false,
+      "reason": "The scorer matched BUG-003, but BUG-003 reports the VAT error (SH-04); no report describes the profit report using the selling price as cost."
+    }
+  ]
+}

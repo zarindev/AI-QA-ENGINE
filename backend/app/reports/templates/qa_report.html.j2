@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ d.project.name }} — {{ title }}</title>
+<style>
+  @page { size: A4; margin: 13mm 12mm 14mm; }
+  * { box-sizing: border-box; }
+  :root { --accent: {{ accent }}; }
+  body { font: 10pt/1.5 "Inter", "Segoe UI", -apple-system, Helvetica, Arial, sans-serif; color: #0f172a; margin: 0; }
+  code, .mono { font-family: "JetBrains Mono", Consolas, monospace; font-size: 8.4pt; }
+  td.mono { white-space: nowrap; }
+  h1 { font-size: 26pt; margin: 0 0 6px; letter-spacing: -0.02em; line-height: 1.15; }
+  h2 { font-size: 14pt; margin: 0 0 10px; padding-bottom: 5px; border-bottom: 2px solid var(--accent); break-after: avoid; }
+  h3 { font-size: 11pt; margin: 14px 0 6px; break-after: avoid; }
+  p { margin: 4px 0 8px; }
+  .muted { color: #64748b; } .small { font-size: 8.5pt; }
+  .page { break-before: page; }
+  section { margin-bottom: 18px; }
+  .cover { background: linear-gradient(140deg, #0a0f1c 0%, #0a0f1c 35%, var(--accent) 140%); color: #fff; border-radius: 16px;
+           padding: 30px 32px 26px; min-height: 250mm; display: flex; flex-direction: column; }
+  .cover .muted { color: #cbd5e1; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 11pt; }
+  .brand img { height: 30px; }
+  .logo { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); display: grid; place-items: center; font-weight: 800; }
+  .cover-main { margin-top: auto; margin-bottom: auto; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 8.5pt; color: #93c5fd; margin-bottom: 8px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 26px; }
+  .kpi { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px 12px; }
+  .kpi b { display: block; font-size: 19pt; line-height: 1.2; }
+  .cover-foot { display: flex; justify-content: space-between; align-items: flex-end; font-size: 8.5pt; color: #cbd5e1; }
+  .score-wrap { display: flex; align-items: center; gap: 22px; margin-top: 22px; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 8.8pt; }
+  th, td { border-bottom: 1px solid #e2e8f0; padding: 5px 6px; text-align: left; vertical-align: top; }
+  th { background: #f8fafc; color: #475569; font-size: 7.8pt; text-transform: uppercase; letter-spacing: .04em; }
+  tr { break-inside: avoid; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 7.8pt; font-weight: 600; white-space: nowrap; }
+  .critical { background: #fecaca; color: #7f1d1d; } .major { background: #fed7aa; color: #7c2d12; }
+  .minor { background: #fef3c7; color: #78350f; } .trivial { background: #e2e8f0; color: #334155; }
+  .pass { background: #dcfce7; color: #166534; } .fail { background: #fee2e2; color: #991b1b; }
+  .blocked { background: #fef3c7; color: #92400e; } .error, .notrun { background: #f1f5f9; color: #475569; }
+  .needs_review { background: #fef3c7; color: #92400e; } .new, .confirmed { background: #dbeafe; color: #1e40af; }
+  .rejected, .fixed { background: #f1f5f9; color: #475569; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; break-inside: avoid; }
+  .bar { height: 9px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+  .bar > div { height: 100%; border-radius: 999px; }
+  .sub { display: grid; grid-template-columns: 105px 1fr 34px; gap: 8px; align-items: center; margin: 5px 0; font-size: 9pt; }
+  .heat td { padding: 2px; border: 0; } .heat th { background: none; padding: 2px 3px; font-size: 7pt; }
+  .hc { height: 22px; border-radius: 5px; display: grid; place-items: center; font-size: 7.5pt; font-family: Consolas, monospace; }
+  .hc.pass { background: #bbf7d0; } .hc.fail { background: #fecaca; } .hc.warn { background: #fde68a; } .hc.untested { background: #e2e8f0; color: #64748b; }
+  .hc.none { border: 1px dashed #cbd5e1; }
+  .bug-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .bug-id { font-family: Consolas, monospace; color: #64748b; font-size: 9pt; }
+  .evidence { width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; margin: 8px 0; }
+  .kv { display: grid; grid-template-columns: 120px 1fr; gap: 3px 10px; font-size: 9pt; }
+  .kv dt { color: #64748b; } .kv dd { margin: 0; }
+  ol.steps { margin: 4px 0 8px 18px; padding: 0; } ol.steps li { margin: 2px 0; }
+  .ea { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0; }
+  .ea > div { border-radius: 10px; padding: 8px 10px; font-size: 9pt; }
+  .exp { background: #f0fdf4; border: 1px solid #bbf7d0; } .act { background: #fef2f2; border: 1px solid #fecaca; }
+  .log { background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 6px 8px; font-size: 7.6pt; white-space: pre-wrap; word-break: break-all; }
+  .callout { background: #eff6ff; border-left: 4px solid var(--accent); border-radius: 6px; padding: 10px 14px; font-size: 10.5pt; }
+  footer { margin-top: 18px; color: #94a3b8; font-size: 7.5pt; }
+</style>
+</head>
+<body>
+
+{% macro ring(value, size=120, stroke=11, dark=False) -%}
+{%- set r = (size - stroke) / 2 -%}{%- set c = 2 * 3.14159 * r -%}
+{%- set v = 0 if value is none else ([0, [100, value]|min]|max) -%}
+{%- set col = '#94a3b8' if value is none else ('#22c55e' if v >= 80 else ('#f59e0b' if v >= 55 else '#ef4444')) -%}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 {{ size }} {{ size }}">
+  <circle cx="{{ size/2 }}" cy="{{ size/2 }}" r="{{ r }}" stroke="{{ 'rgba(255,255,255,.15)' if dark else '#e2e8f0' }}" stroke-width="{{ stroke }}" fill="none"/>
+  <circle cx="{{ size/2 }}" cy="{{ size/2 }}" r="{{ r }}" stroke="{{ col }}" stroke-width="{{ stroke }}" fill="none" stroke-linecap="round"
+    stroke-dasharray="{{ c * v / 100 }} {{ c }}" transform="rotate(-90 {{ size/2 }} {{ size/2 }})"/>
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="{{ size * 0.27 }}" font-weight="700" fill="{{ '#fff' if dark else '#0f172a' }}">{{ '—' if value is none else '%.0f'|format(value) }}</text>
+</svg>
+{%- endmacro %}
+
+{% macro bug_page(b, first=False) -%}
+<div class="{{ '' if first else 'page' }}">
+  <div class="bug-head">
+    <div>
+      <div class="bug-id">{{ b.id }} · {{ b.module or 'General' }} · {{ b.category|replace('_', ' ') }}</div>
+      <h2 style="border:0;margin:2px 0 6px">{{ b.title }}</h2>
+    </div>
+    <div style="text-align:right;white-space:nowrap">
+      <span class="pill {{ b.severity }}">{{ b.severity }}</span> <span class="pill trivial">{{ b.priority }}</span><br>
+      <span class="pill {{ b.status }}" style="margin-top:4px">{{ b.status|replace('_', ' ') }}</span>
+    </div>
+  </div>
+  {% if b.summary %}<p>{{ b.summary }}</p>{% endif %}
+  {% set img = images.get(b.id) %}
+  {% if img %}<img class="evidence" src="{{ img }}" alt="Annotated screenshot of {{ b.id }}">{% endif %}
+  <div class="ea"><div class="exp"><b>Expected</b><br>{{ b.expected or '—' }}</div><div class="act"><b>Actual</b><br>{{ b.actual or '—' }}</div></div>
+  {% if b.preconditions %}<h3>Preconditions</h3><ul style="margin:2px 0 6px 18px;padding:0">{% for p in b.preconditions %}<li>{{ p }}</li>{% endfor %}</ul>{% endif %}
+  {% if b.steps_to_reproduce %}<h3>Steps to reproduce</h3><ol class="steps">{% for s in b.steps_to_reproduce %}<li>{{ s }}</li>{% endfor %}</ol>{% endif %}
+  <dl class="kv">
+    <dt>Environment</dt><dd>{{ b.environment.browser }} · {{ b.environment.os }} · {{ b.environment.viewport }}</dd>
+    <dt>URL</dt><dd class="mono">{{ b.environment.url or '—' }}</dd>
+    <dt>Role</dt><dd>{{ b.environment.role or '—' }}</dd>
+    <dt>Found</dt><dd>{{ b.environment.date_time or b.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</dd>
+    <dt>Reproducibility</dt><dd>{{ b.reproducibility or '—' }} · confidence {{ '%.0f'|format(b.confidence * 100) }}%</dd>
+    <dt>Severity reason</dt><dd>{{ b.severity_reason or '—' }}</dd>
+    <dt>Linked tests</dt><dd class="mono">{{ b.test_case_ids|join(', ') or '—' }}</dd>
+    <dt>Requirements</dt><dd class="mono">{{ (b.links.get('rules', []) + b.links.get('stories', []) + b.links.get('workflows', []))|join(', ') or '—' }}</dd>
+    {% if b.clip or b.video %}<dt>Video</dt><dd class="mono">{{ b.clip or b.video }}</dd>{% endif %}
+  </dl>
+  {% if b.console %}<h3>Console</h3><div class="log">{{ b.console[:4]|join('\n') }}</div>{% endif %}
+  {% if b.network %}<h3>Network</h3><div class="log">{{ b.network[:4]|join('\n') }}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{% if kind == 'single' %}
+  {{ bug_page(bugs[0], True) }}
+{% else %}
+
+<div class="cover">
+  <div class="brand">
+    {% if logo %}<img src="{{ logo }}" alt="">{% else %}<div class="logo">Q</div>{% endif %}
+    {{ d.branding.company_name or 'QA Pilot' }}
+  </div>
+  <div class="cover-main">
+    <div class="eyebrow">{{ title }}</div>
+    <h1>{{ d.project.name }}</h1>
+    <div class="muted">{{ d.project.url }}</div>
+    {% if d.branding.prepared_for %}<div class="muted" style="margin-top:4px">Prepared for {{ d.branding.prepared_for }}</div>{% endif %}
+    <div class="score-wrap">
+      {{ ring(d.quality.score if d.quality else none, 128, 12, True) }}
+      <div>
+        <div style="font-size:15pt;font-weight:700">Quality score{% if d.quality and d.quality.score is not none %} · grade {{ d.quality.grade }}{% endif %}</div>
+        <div class="muted">{{ headline }}</div>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><b>{{ d.crawl.pages|length if d.crawl else 0 }}</b>pages explored</div>
+      <div class="kpi"><b>{{ d.result_list|length }}</b>tests run</div>
+      <div class="kpi"><b>{{ counts.pass }}</b>passed</div>
+      <div class="kpi"><b>{{ d.open_bugs|length }}</b>open bugs</div>
+    </div>
+  </div>
+  <div class="cover-foot">
+    <div>Run {{ d.run.id }} · {{ d.run.mode }} mode · {{ d.generated.strftime('%d %B %Y') }}</div>
+    <div>Generated with QA Pilot {{ version }}{% if d.privacy %} · personal data blurred{% endif %}</div>
+  </div>
+</div>
+
+{% if kind == 'full' %}
+<div class="page">
+  <section>
+    <h2>Executive summary</h2>
+    <div class="callout">{{ summary_lead }}</div>
+    <ul>{% for line in summary_points %}<li>{{ line }}</li>{% endfor %}</ul>
+  </section>
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-top:0">Test results</h3>
+      {% set total = [d.result_list|length, 1]|max %}
+      <svg width="100%" height="26" viewBox="0 0 400 26" preserveAspectRatio="none">
+        {% set ns = namespace(x=0) %}
+        {% for k, col in [('pass','#22c55e'),('fail','#ef4444'),('blocked','#f59e0b'),('error','#94a3b8')] %}
+          {% set w = 400 * counts[k] / total %}<rect x="{{ ns.x }}" y="0" width="{{ w }}" height="26" fill="{{ col }}"/>{% set ns.x = ns.x + w %}
+        {% endfor %}
+      </svg>
+      <table style="margin-top:8px">{% for k in ['pass','fail','blocked','error'] %}<tr><td><span class="pill {{ k }}">{{ k }}</span></td><td style="text-align:right">{{ counts[k] }}</td></tr>{% endfor %}</table>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Open bugs by severity</h3>
+      {% set mx = [sev.values()|max, 1]|max %}
+      {% for k, col in [('critical','#dc2626'),('major','#ea580c'),('minor','#d97706'),('trivial','#94a3b8')] %}
+      <div class="sub"><span>{{ k|capitalize }}</span><div class="bar"><div style="width:{{ 100 * sev[k] / mx }}%;background:{{ col }}"></div></div><span style="text-align:right">{{ sev[k] }}</span></div>
+      {% endfor %}
+    </div>
+  </div>
+  {% if d.quality %}
+  <section style="margin-top:14px">
+    <h2>Quality score breakdown</h2>
+    {% for s in d.quality.sub_scores %}
+    <div class="sub"><span>{{ s.label }}</span>
+      <div class="bar">{% if s.score is not none %}<div style="width:{{ s.score }}%;background:{{ '#22c55e' if s.score >= 80 else ('#f59e0b' if s.score >= 55 else '#ef4444') }}"></div>{% endif %}</div>
+      <span style="text-align:right" class="mono">{{ '—' if s.score is none else '%.0f'|format(s.score) }}</span></div>
+    <div class="small muted" style="margin:-4px 0 4px 113px">{{ s.note or (s.passed ~ '/' ~ s.executed ~ ' passed') }}{% if s.bugs %} · {{ s.bugs }} open bug{{ 's' if s.bugs > 1 }}{% endif %}</div>
+    {% endfor %}
+    <p class="small muted">Formula: {{ d.quality.formula }}.</p>
+  </section>
+  {% endif %}
+</div>
+
+{% if d.profile %}
+<div class="page">
+  <section>
+    <h2>What QA Pilot found on the site</h2>
+    <p><b>{{ d.profile.domain|capitalize }}</b> · {{ d.profile.sub_type }} <span class="muted">(confidence {{ '%.0f'|format(d.profile.confidence * 100) }}%)</span></p>
+    <p>{{ d.profile.summary }}</p>
+    <table><tr><th style="width:25%">Role</th><th>What it does</th></tr>
+      {% for r in d.profile.role_details %}<tr><td><b>{{ r.name }}</b></td><td>{{ r.description or '—' }}</td></tr>{% endfor %}</table>
+    <h3>Modules</h3><p>{{ d.profile.modules|join(' · ') }}</p>
+  </section>
+  {% if d.heatmap and d.heatmap.cells %}
+  <section>
+    <h2>Coverage heatmap</h2>
+    <table class="heat"><tr><th></th>{% for t in d.heatmap.techniques %}<th title="{{ t }}">{{ short.get(t, t) }}</th>{% endfor %}</tr>
+      {% for m in d.heatmap.modules %}<tr><td style="font-size:8pt;font-weight:600;white-space:nowrap;padding-right:6px">{{ m }}</td>
+        {% for t in d.heatmap.techniques %}{% set c = heat.get((m, t)) %}
+          <td>{% if c %}<div class="hc {{ c.state }}">{{ '–' if c.state == 'untested' else c.passed ~ '/' ~ c.total }}</div>{% else %}<div class="hc none"></div>{% endif %}</td>
+        {% endfor %}</tr>{% endfor %}</table>
+    <p class="small muted">Green: all passed · red: a test failed · amber: partly run or blocked · grey: not run · dashed: no tests (a gap).</p>
+  </section>
+  {% endif %}
+  {% if d.matrix and d.matrix.roles %}
+  <section>
+    <h2>Permissions</h2>
+    {% if d.matrix.holes %}
+      <p><b style="color:#b91c1c">{{ d.matrix.holes }} permission hole{{ 's' if d.matrix.holes > 1 }}</b> — screens a role can open although its own menus never lead there:</p>
+      <table><tr><th>Role</th><th>Screen</th><th>Evidence</th></tr>
+        {% for c in d.matrix.cells if c.hole %}<tr><td>{{ c.role }}</td><td class="mono">{{ c.page }}</td><td>{{ c.evidence }}</td></tr>{% endfor %}</table>
+    {% else %}<p>No permission holes found across {{ d.matrix.roles|length }} roles and {{ d.matrix.pages|length }} screens.</p>{% endif %}
+  </section>
+  {% endif %}
+  {% if d.comparison %}
+  <section>
+    <h2>Compared with run {{ d.comparison.base_run }}</h2>
+    <p>{{ d.comparison.counts.new }} new · {{ d.comparison.counts.fixed }} fixed · {{ d.comparison.counts.still_open }} still open · {{ d.comparison.counts.reappeared }} reappeared</p>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}
+
+<div class="page">
+  <h2>Bugs ({{ bugs|length }})</h2>
+  <table><tr><th>Bug</th><th>Title</th><th>Severity</th><th>Priority</th><th>Status</th><th>Repro</th></tr>
+    {% for b in bugs %}<tr><td class="mono">{{ b.id }}</td><td>{{ b.title }}</td><td><span class="pill {{ b.severity }}">{{ b.severity }}</span></td><td>{{ b.priority }}</td><td><span class="pill {{ b.status }}">{{ b.status|replace('_', ' ') }}</span></td><td>{{ b.reproducibility or '—' }}</td></tr>{% endfor %}</table>
+  {% if not bugs %}<p class="muted">No bugs were reported in this run.</p>{% endif %}
+</div>
+
+{% for b in bugs %}{{ bug_page(b) }}{% endfor %}
+
+{% if kind == 'full' %}
+<div class="page">
+  <h2>Appendix A — Test results</h2>
+  <table><tr><th>Test</th><th>Title</th><th>Role</th><th>Result</th><th>Repro</th><th>Bugs</th></tr>
+    {% for r in d.result_list %}<tr><td class="mono">{{ r.test_case_id }}</td><td>{{ r.title }}</td><td>{{ r.role or '—' }}</td><td><span class="pill {{ r.result }}">{{ r.result }}</span></td><td>{{ r.reproducibility or '—' }}</td><td class="mono">{{ r.bug_ids|join(', ') }}</td></tr>{% endfor %}</table>
+</div>
+<div class="page">
+  <h2>Appendix B — Traceability</h2>
+  <p class="small muted">Requirement → user story → test case → result → bug.</p>
+  <table><tr><th>Requirement</th><th>Stories</th><th>Test</th><th>Result</th><th>Bugs</th></tr>
+    {% for t in trace %}<tr><td><span class="mono">{{ t.requirement }}</span>{% if t.requirement_text %}<div class="small muted">{{ t.requirement_text|truncate(110) }}</div>{% endif %}</td><td class="mono">{{ t.story }}</td><td><span class="mono">{{ t.test_case }}</span><div class="small muted">{{ t.test_title|truncate(70) }}</div></td><td><span class="pill {{ t.result|replace(' ', '') }}">{{ t.result }}</span></td><td class="mono">{{ t.bugs|join(', ') }}</td></tr>{% endfor %}</table>
+</div>
+<div class="page">
+  <h2>Appendix C — How this report was made</h2>
+  <p>QA Pilot explored the site in a real Chrome browser, built a model of its pages, roles and data, inferred requirements
+    and business rules (confirmed by a person before testing), designed test cases with standard techniques, and ran them with an AI
+    browser agent and rule-based checks. Every failure was re-run to measure reproducibility; flaky or low-confidence results are
+    marked “needs review”. Numbers in calculations were re-checked in Python where a business rule applied.</p>
+  <p>Safety: {{ 'Safe Mode — nothing was submitted, created or deleted.' if d.run.mode == 'safe' else 'Full Mode on a ' ~ d.project.environment ~ ' environment — test records are prefixed QAP_ and use fake data.' }}
+    Credentials are stored encrypted on the tester's computer and never appear in reports.{% if d.privacy %} Emails, phone numbers and people's names are blurred in screenshots.{% endif %}</p>
+  <p class="small muted">Authorization to test confirmed by {{ d.project.authorized_by }} on {{ d.project.authorized_at.strftime('%Y-%m-%d') }}.</p>
+</div>
+{% endif %}
+{% endif %}
+<footer>{{ d.project.name }} · {{ title }} · QA Pilot {{ version }}</footer>
+</body>
+</html>

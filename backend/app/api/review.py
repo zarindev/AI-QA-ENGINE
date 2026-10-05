@@ -3,6 +3,7 @@ regenerate), cost estimate and exports (requirements PDF/Markdown, Excel, Gherki
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException
@@ -13,11 +14,13 @@ from app.api.deps import executor, get_project_or_404, get_run_or_404, repo
 from app.core.config import get_settings
 from app.explore.stage import PAGES_FILE
 from app.jobs.run_state import RunTracker
-from app.reports import excel, gherkin, requirements_doc
+from app.reports import csv_export, excel, gherkin, pytest_export, qa_report, qa_workbook, requirements_doc
+from app.reports import data as report_data
 from app.requirements.stage import REQUIREMENTS_FILE
 from app.storage.repository import NotFoundError
 from app.storage.schemas import (
     CrawlResult,
+    Project,
     RequirementsDoc,
     Run,
     SiteProfile,
@@ -332,11 +335,31 @@ def get_estimate(
 
 
 EXPORTS = {
+    "qa_report_pdf": qa_report.REPORT_PDF,
+    "qa_xlsx": qa_workbook.QA_XLSX,
+    "bugs_pdf": qa_report.BUGS_PDF,
+    "jira_csv": csv_export.JIRA_CSV,
+    "trello_csv": csv_export.TRELLO_CSV,
+    "traceability_csv": csv_export.TRACE_CSV,
+    "pytest_zip": pytest_export.SUITE_ZIP,
     "requirements_pdf": requirements_doc.PDF_FILE,
     "requirements_md": requirements_doc.MD_FILE,
     "testcases_xlsx": excel.TESTCASES_XLSX,
     "gherkin_zip": gherkin.GHERKIN_ZIP,
 }
+ReportKind = Literal[
+    "requirements",
+    "testcases_xlsx",
+    "gherkin_zip",
+    "qa_report_pdf",
+    "qa_xlsx",
+    "bugs_pdf",
+    "bug_pdf",
+    "jira_csv",
+    "trello_csv",
+    "traceability_csv",
+    "pytest_zip",
+]
 
 
 @router.get("/exports")
@@ -356,11 +379,23 @@ def list_exports(slug: str, run_id: str) -> list[dict[str, Any]]:
 def create_export(
     slug: str,
     run_id: str,
-    kind: Literal["requirements", "testcases_xlsx", "gherkin_zip"],
+    kind: ReportKind,
     include: Literal["approved", "all"] = "approved",
+    bug_id: str | None = None,
 ) -> dict[str, Any]:
     project = get_project_or_404(slug)
     run = get_run_or_404(slug, run_id)
+    if kind in (
+        "qa_report_pdf",
+        "qa_xlsx",
+        "bugs_pdf",
+        "bug_pdf",
+        "jira_csv",
+        "trello_csv",
+        "traceability_csv",
+        "pytest_zip",
+    ):
+        return {"files": [repo().relative_to_run(run, _report(project, run, kind, bug_id))]}
     if kind == "requirements":
         paths = requirements_doc.export(
             repo(),
@@ -384,3 +419,25 @@ def create_export(
             raise HTTPException(400, "No approved test cases yet — approve some first, or export all.")
         path = gherkin.export(repo(), run, suite, statuses)
     return {"files": [repo().relative_to_run(run, path)]}
+
+
+def _report(project: Project, run: Run, kind: str, bug_id: str | None) -> Path:
+    d = report_data.load(repo(), project, run)
+    if kind == "qa_xlsx":
+        return qa_workbook.export(repo(), d)
+    if kind == "pytest_zip":
+        if d.suite is None or not any(c.status == "approved" for c in d.suite.cases):
+            raise HTTPException(400, "No approved test cases to export.")
+        return pytest_export.export(repo(), d)
+    if kind in ("jira_csv", "trello_csv", "traceability_csv"):
+        if kind != "traceability_csv" and not d.bugs:
+            raise HTTPException(400, "No bugs yet — run the tests first.")
+        return csv_export.export(repo(), d, kind.removesuffix("_csv"))
+    if kind in ("bugs_pdf", "bug_pdf") and not d.bugs:
+        raise HTTPException(400, "No bugs yet — run the tests first.")
+    try:
+        if kind == "bug_pdf":
+            return qa_report.export(repo(), d, "single", bug_id)
+        return qa_report.export(repo(), d, "full" if kind == "qa_report_pdf" else "bugs")
+    except KeyError:
+        raise HTTPException(404, f"{bug_id} not found") from None

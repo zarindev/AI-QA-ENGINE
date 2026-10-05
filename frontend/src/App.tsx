@@ -16,6 +16,7 @@ import { Results } from "@/pages/Results";
 import { Bugs, BugDetail } from "@/pages/Bugs";
 import { Quality } from "@/pages/Quality";
 import { Permissions } from "@/pages/Permissions";
+import { Reports } from "@/pages/Reports";
 import { EmptyState } from "@/components/ui/states";
 import { Compass } from "lucide-react";
 
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="projects/:slug/runs/:runId/bugs/:bugId" element={<BugDetail />} />
           <Route path="projects/:slug/runs/:runId/quality" element={<Quality />} />
           <Route path="projects/:slug/runs/:runId/permissions" element={<Permissions />} />
+          <Route path="projects/:slug/runs/:runId/reports" element={<Reports />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<EmptyState icon={Compass} title="Page not found" description="That screen does not exist." />} />
         </Route>

@@ -87,6 +87,15 @@ def write_settings(body: dict[str, Any]) -> dict[str, Any]:
     return read_settings()
 
 
+@router.delete("/settings")
+def reset_settings() -> dict[str, Any]:
+    """Danger zone: forget every change made in Settings (back to config/settings.yaml). Projects are untouched."""
+    path = repo().root / "settings.json"
+    if path.exists():
+        path.unlink()
+    return read_settings()
+
+
 @router.post("/settings/open-workspace")
 def open_workspace() -> dict[str, str]:
     """Open the workspace folder in Explorer / Finder / the file manager (local app, so this is the user's machine)."""

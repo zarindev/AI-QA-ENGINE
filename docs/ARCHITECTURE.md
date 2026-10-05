@@ -98,3 +98,15 @@ state and validation bugs count against Functional.
   bug evidence, videos and exports use blurred copies when the project's setting is on (Auto = healthcare and banking).
 - **Multi-viewport runs** — the Run button can add tablet (768×1024) and phone (390×844); each test runs again at that
   size as `TC-…@mobile`, and its bug report records the viewport.
+
+## Reports
+
+`app/reports/data.py` loads a run once (`ReportData`) for every exporter: `qa_report.py` (Jinja → HTML → PDF with
+the same headless Chrome, evidence embedded as data URIs so the HTML is self-contained), `qa_workbook.py` (openpyxl),
+`csv_export.py`, `pytest_export.py`. The executive summary is generated from the numbers (no AI), so a report always
+matches its data.
+
+The pytest exporter turns replay scripts into page objects (one per module, multi-strategy `Loc` locators) and tests.
+Assertions are concrete text only: for a passed test, quoted text and amounts the agent saw on the final page; for a
+failed test, the expected values that were missing — so the exported test fails until the bug is fixed. Text the
+expectation negates ("no *Hand over car* button") and browser-native validation bubbles are never asserted.

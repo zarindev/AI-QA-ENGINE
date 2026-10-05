@@ -1,7 +1,4 @@
-"""Excel exports (openpyxl). Phase 3: the test-case workbook — Test Cases, User Stories, Business Rules.
-
-Phase 6 extends this into the full QA workbook (results, bugs, permission matrix, traceability).
-"""
+"""Excel exports (openpyxl): the test-case workbook (Phase 3) and the full QA workbook (qa_workbook.py)."""
 
 from __future__ import annotations
 
@@ -68,10 +65,10 @@ def _colour(ws: Worksheet, column: int, fills: dict[str, PatternFill]) -> None:
             row[0].fill = fill
 
 
-def testcases_workbook(project: Project, run: Run, suite: TestSuite, req: RequirementsDoc | None) -> bytes:
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Test Cases"
+def _cases_sheet(wb: Workbook, suite: TestSuite, title: str = "Test Cases", first: bool = False) -> Worksheet:
+    ws = wb.active if first else wb.create_sheet(title)
+    assert ws is not None
+    ws.title = title
     rows = []
     for c in suite.cases:
         steps = "\n".join(
@@ -124,48 +121,60 @@ def testcases_workbook(project: Project, run: Run, suite: TestSuite, req: Requir
     )
     _colour(ws, 6, PRIORITY_FILL)
     _colour(ws, 14, STATUS_FILL)
+    return ws
 
+
+def _stories_sheet(wb: Workbook, req: RequirementsDoc) -> None:
+    st = wb.create_sheet("User Stories")
+    write_table(
+        st,
+        ["ID", "Role", "Module", "Feature", "Story", "Acceptance criteria", "Status"],
+        [
+            [
+                s.id,
+                s.role,
+                s.module,
+                s.feature,
+                s.story,
+                "\n".join(f"• {a}" for a in s.acceptance_criteria),
+                s.status,
+            ]
+            for s in req.stories
+        ],
+        [9, 14, 16, 22, 55, 60, 11],
+    )
+    _colour(st, 7, STATUS_FILL)
+
+
+def _rules_sheet(wb: Workbook, req: RequirementsDoc, title: str = "Business Rules") -> None:
+    br = wb.create_sheet(title)
+    write_table(
+        br,
+        ["ID", "Rule", "Condition", "Category", "Entity", "Source", "Confidence", "Status"],
+        [
+            [
+                r.id,
+                r.statement,
+                r.condition,
+                r.category,
+                r.entity,
+                r.source,
+                round(r.confidence, 2),
+                r.status,
+            ]
+            for r in req.rules
+        ],
+        [9, 50, 45, 14, 14, 30, 11, 11],
+    )
+    _colour(br, 8, STATUS_FILL)
+
+
+def testcases_workbook(project: Project, run: Run, suite: TestSuite, req: RequirementsDoc | None) -> bytes:
+    wb = Workbook()
+    _cases_sheet(wb, suite, first=True)
     if req is not None:
-        st = wb.create_sheet("User Stories")
-        write_table(
-            st,
-            ["ID", "Role", "Module", "Feature", "Story", "Acceptance criteria", "Status"],
-            [
-                [
-                    s.id,
-                    s.role,
-                    s.module,
-                    s.feature,
-                    s.story,
-                    "\n".join(f"• {a}" for a in s.acceptance_criteria),
-                    s.status,
-                ]
-                for s in req.stories
-            ],
-            [9, 14, 16, 22, 55, 60, 11],
-        )
-        _colour(st, 7, STATUS_FILL)
-        br = wb.create_sheet("Business Rules")
-        write_table(
-            br,
-            ["ID", "Rule", "Condition", "Category", "Entity", "Source", "Confidence", "Status"],
-            [
-                [
-                    r.id,
-                    r.statement,
-                    r.condition,
-                    r.category,
-                    r.entity,
-                    r.source,
-                    round(r.confidence, 2),
-                    r.status,
-                ]
-                for r in req.rules
-            ],
-            [9, 50, 45, 14, 14, 30, 11, 11],
-        )
-        _colour(br, 8, STATUS_FILL)
-
+        _stories_sheet(wb, req)
+        _rules_sheet(wb, req)
     about = wb.create_sheet("About")
     for row in (
         ["Project", project.name],

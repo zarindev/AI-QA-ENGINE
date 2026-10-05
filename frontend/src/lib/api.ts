@@ -233,6 +233,10 @@ export interface Estimate {
   mode: "safe" | "full";
 }
 
+export type ExportKind =
+  | "requirements" | "testcases_xlsx" | "gherkin_zip" | "qa_report_pdf" | "qa_xlsx" | "bugs_pdf" | "bug_pdf"
+  | "jira_csv" | "trello_csv" | "traceability_csv" | "pytest_zip";
+
 export interface ExportFile {
   kind: string;
   path: string;
@@ -376,6 +380,7 @@ export const api = {
   settings: () => request<Record<string, Record<string, unknown>>>("/api/settings"),
   saveSettings: (body: Record<string, unknown>) =>
     request<Record<string, Record<string, unknown>>>("/api/settings", { method: "PUT", body: JSON.stringify(body) }),
+  resetSettings: () => request<Record<string, Record<string, unknown>>>("/api/settings", { method: "DELETE" }),
   openWorkspace: () => request<{ opened: string }>("/api/settings/open-workspace", { method: "POST" }),
   projects: () => request<Project[]>("/api/projects"),
   project: (slug: string) => request<Project>(`/api/projects/${slug}`),
@@ -416,8 +421,8 @@ export const api = {
   estimate: (slug: string, id: string, status = "approved") =>
     request<Estimate>(`/api/projects/${slug}/runs/${id}/testcases/estimate?status=${status}`),
   exports: (slug: string, id: string) => request<ExportFile[]>(`/api/projects/${slug}/runs/${id}/exports`),
-  createExport: (slug: string, id: string, kind: "requirements" | "testcases_xlsx" | "gherkin_zip") =>
-    request<{ files: string[] }>(`/api/projects/${slug}/runs/${id}/exports/${kind}`, { method: "POST" }),
+  createExport: (slug: string, id: string, kind: ExportKind, bugId?: string) =>
+    request<{ files: string[] }>(`/api/projects/${slug}/runs/${id}/exports/${kind}${bugId ? `?bug_id=${bugId}` : ""}`, { method: "POST" }),
   execute: (slug: string, id: string, caseIds?: string[], viewports: Viewport[] = ["desktop"]) =>
     request<{ status: string; cases: number; agent_cases: number; ai: boolean; mode: string }>(
       `/api/projects/${slug}/runs/${id}/execute`, { method: "POST", body: JSON.stringify({ case_ids: caseIds ?? null, viewports }) }),

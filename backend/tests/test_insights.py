@@ -144,9 +144,11 @@ def test_privacy_blur_changes_only_the_marked_region(tmp_path):
     img.save(buf, "PNG")
     path = tmp_path / "shot.png"
     path.write_bytes(buf.getvalue())
-    privacy.sidecar(path).write_text('[{"x": 10, "y": 10, "width": 40, "height": 20}]', encoding="utf-8")
-    # screenshot is 200px wide for a 100px-wide viewport (device pixel ratio 2) → rect is scaled
-    out = Image.open(io.BytesIO(privacy.blurred_bytes(path, viewport_width=100))).convert("RGB")
+    privacy.sidecar(path).write_text(
+        '{"width": 100, "rects": [{"x": 10, "y": 10, "width": 40, "height": 20}]}', encoding="utf-8"
+    )
+    # screenshot is 200px wide; the sidecar says the viewport was 100px (device pixel ratio 2) → rect is scaled
+    out = Image.open(io.BytesIO(privacy.blurred_bytes(path))).convert("RGB")
     assert out.getpixel((20, 30)) != (0, 0, 0)  # inside: blurred
     assert out.getpixel((150, 80)) == (255, 255, 255)  # outside: untouched
     privacy.sidecar(path).unlink()

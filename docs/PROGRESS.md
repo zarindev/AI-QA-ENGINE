@@ -189,6 +189,29 @@ final per-app numbers. Benchmarks for the README come from Phase 8 only.
 - **Multi-viewport runs** (desktop / tablet / phone picker next to *Run approved tests*).
 - API: `GET …/quality`, `GET …/permissions`, `GET …/compare?base=`, `PATCH /api/projects/{slug}`.
 
+## Phase 6 — Reporting (built)
+
+Run → *Reports* (export centre), or `POST /api/projects/{slug}/runs/{id}/exports/{kind}`. Files land in the run's
+`exports/` folder.
+
+| Kind | File | Contents |
+|---|---|---|
+| `qa_report_pdf` | `qa_report.pdf` | Cover (branding, quality ring, KPIs), plain-language executive summary, result and severity charts, score breakdown, site profile, coverage heatmap, permissions, regression, bug list, one page per bug, appendices (results, traceability, method) |
+| `bugs_pdf` / `bug_pdf` | `bug_report.pdf`, `bugs/BUG-001.pdf` | Bug-only report; single bug (also a *PDF* button on each bug) |
+| `qa_xlsx` | `qa_report.xlsx` | Summary, Site Profile, Requirements, User Stories, Test Cases, Execution Results, Bugs, Permission Matrix, Traceability — frozen headers, filters, colour-coded, hyperlinks to screenshots / clips / videos |
+| `jira_csv`, `trello_csv` | `bugs_jira.csv`, `bugs_trello.csv` | Importable bug lists (UTF-8 BOM, Jira wiki markup) |
+| `traceability_csv` | `traceability.csv` | Requirement → story → test case → result → bug |
+| `pytest_zip` | `pytest_suite.zip` (+ folder) | pytest + Selenium Page Object suite with README, `.env.example`, markers |
+| `gherkin_zip`, `testcases_xlsx`, `requirements` | (Phase 3) | |
+
+Privacy blur is applied to every embedded screenshot when on; credentials are never read by the exporters.
+Branding (company, client, accent colour, logo) is set in *Settings → Report branding*.
+
+**Verified (2026-10-05, DriveNow Rentals run):** all exports generated (PDF report 3 MB in 3 s). The exported pytest suite
+ran against the demo app after a data reset: **49 passed, 9 failed, 2 skipped** — every failure is a real bug QA Pilot
+had reported (accessibility violations, missing 10 % weekly discount, `/admin/revenue` open to agent and customer,
+`/calendar` overflowing at 768 px); the 2 skips are tests that were not recorded.
+
 ## How to resume
 
 ```

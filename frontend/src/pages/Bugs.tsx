@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
-  AlertOctagon, ArrowLeft, Bug as BugIcon, Check, CheckCheck, Clapperboard, ClipboardList, Eye, Film, LayoutGrid, List, Monitor,
+  AlertOctagon, ArrowLeft, Bug as BugIcon, Check, CheckCheck, Clapperboard, ClipboardList, Eye, FileDown, Film, LayoutGrid, List, Loader2, Monitor,
   Play, Repeat, ScrollText, ShieldAlert, Wrench, X,
 } from "lucide-react";
 import { api, fileUrl, type BugStatus, type Severity } from "@/lib/api";
@@ -46,6 +46,7 @@ export function Bugs() {
       <PageHeader crumbs={crumbs} title="Bugs" description="Every bug was reproduced by re-running its test; evidence is attached."
         actions={<>
           <Button variant="ghost" asChild><Link to={`/projects/${slug}/runs/${runId}/results`}><ClipboardList /> Results</Link></Button>
+          <Button variant="secondary" asChild><Link to={`/projects/${slug}/runs/${runId}/reports`}><FileDown /> Reports</Link></Button>
           <div className="flex rounded-lg border border-line p-0.5">
             <button aria-label="Board view" onClick={() => setView("board")} className={cn("rounded-md p-1.5", view === "board" && "bg-primary-soft")}><LayoutGrid className="size-4" /></button>
             <button aria-label="Table view" onClick={() => setView("table")} className={cn("rounded-md p-1.5", view === "table" && "bg-primary-soft")}><List className="size-4" /></button>
@@ -118,6 +119,11 @@ export function BugDetail() {
     onError: (e: Error) => toast.error(e.message),
   });
   const replay = useMutation({ mutationFn: () => api.replayBug(slug, runId, bugId), onSuccess: (r) => toast.info(r.message), onError: (e: Error) => toast.error(e.message) });
+  const pdf = useMutation({
+    mutationFn: () => api.createExport(slug, runId, "bug_pdf", bugId),
+    onSuccess: (r) => window.open(fileUrl(slug, runId, r.files[0]), "_blank"),
+    onError: (e: Error) => toast.error(e.message),
+  });
   const crumbs = [{ label: "Projects", to: "/" }, { label: slug, to: `/projects/${slug}` }, { label: runId, to: `/projects/${slug}/runs/${runId}` }, { label: "Bugs", to: `/projects/${slug}/runs/${runId}/bugs` }];
 
   if (bugs.isLoading) return <Skeleton className="h-96 rounded-card" />;
@@ -134,6 +140,7 @@ export function BugDetail() {
         </span>}
         actions={<>
           <Button variant="secondary" onClick={() => replay.mutate()} disabled={replay.isPending}><Play /> Replay in browser</Button>
+          <Button variant="secondary" onClick={() => pdf.mutate()} disabled={pdf.isPending}>{pdf.isPending ? <Loader2 className="animate-spin" /> : <FileDown />} PDF</Button>
           {bug.status !== "confirmed" && <Button onClick={() => update.mutate("confirmed")}><Check /> Confirm</Button>}
           {bug.status !== "fixed" && <Button variant="secondary" onClick={() => update.mutate("fixed")}><Wrench /> Mark fixed</Button>}
           {bug.status !== "rejected" && <Button variant="ghost" onClick={() => update.mutate("rejected")}><X /> Not a bug</Button>}

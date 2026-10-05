@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Bot, CheckCircle2, Monitor, FolderOpen, Globe, KeyRound, Loader2, Save, ShieldCheck, XCircle } from "lucide-react";
+import { AlertTriangle, Bot, CheckCircle2, Monitor, FolderOpen, Globe, KeyRound, Loader2, Palette, RotateCcw, Save, ShieldCheck, XCircle } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -21,15 +21,22 @@ export function SettingsPage() {
   useEffect(() => { if (settings.data) setDraft(structuredClone(settings.data)); }, [settings.data]);
 
   const save = useMutation({
-    mutationFn: () => api.saveSettings({ ai: draft!.ai, browser: draft!.browser, crawl: draft!.crawl, safety: draft!.safety }),
+    mutationFn: () => api.saveSettings({ ai: draft!.ai, browser: draft!.browser, crawl: draft!.crawl, safety: draft!.safety, branding: draft!.branding ?? {} }),
     onSuccess: (data) => { toast.success("Settings saved to workspace/settings.json"); qc.setQueryData(["settings"], data); },
     onError: (e: Error) => toast.error(e.message),
   });
+  const reset = useMutation({
+    mutationFn: api.resetSettings,
+    onSuccess: (data) => { toast.success("Settings reset to the defaults in config/settings.yaml"); qc.setQueryData(["settings"], data); setConfirmReset(false); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const [confirmReset, setConfirmReset] = useState(false);
   const openFolder = useMutation({ mutationFn: api.openWorkspace, onError: (e: Error) => toast.error(e.message) });
 
   if (settings.isLoading || !draft) return settings.error ? <ErrorState error={settings.error} /> : <Skeleton className="h-96 rounded-card" />;
   const set = (section: string, key: string, value: unknown) => setDraft({ ...draft, [section]: { ...draft[section], [key]: value } });
   const num = (section: string, key: string) => Number(draft[section][key] ?? 0);
+  const str = (section: string, key: string) => String(draft[section]?.[key] ?? "");
 
   return (
     <div className="max-w-4xl">
@@ -79,10 +86,37 @@ export function SettingsPage() {
         </Card>
 
         <Card>
+          <CardHeader><div><CardTitle className="flex items-center gap-2"><Palette className="size-4" /> Report branding</CardTitle><CardDescription>Shown on PDF and Excel report covers.</CardDescription></div></CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div><Label htmlFor="company">Prepared by (your company)</Label><Input id="company" placeholder="Acme QA" value={str("branding", "company_name")} onChange={(e) => set("branding", "company_name", e.target.value)} /></div>
+            <div><Label htmlFor="client">Prepared for (client, optional)</Label><Input id="client" value={str("branding", "prepared_for")} onChange={(e) => set("branding", "prepared_for", e.target.value)} /></div>
+            <div>
+              <Label htmlFor="accent">Accent colour</Label>
+              <div className="flex gap-2">
+                <input aria-label="Pick accent colour" type="color" value={str("branding", "accent_color") || "#2563EB"} onChange={(e) => set("branding", "accent_color", e.target.value.toUpperCase())} className="h-10 w-12 cursor-pointer rounded-[10px] border border-line-strong bg-elevated p-1" />
+                <Input id="accent" value={str("branding", "accent_color")} onChange={(e) => set("branding", "accent_color", e.target.value)} />
+              </div>
+            </div>
+            <div><Label htmlFor="logo">Logo file (PNG or SVG on this computer)</Label><Input id="logo" placeholder={"C:\\Users\\me\\logo.png"} value={str("branding", "logo_path")} onChange={(e) => set("branding", "logo_path", e.target.value)} /><Hint>Leave empty for the QA Pilot mark.</Hint></div>
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader><div><CardTitle className="flex items-center gap-2"><Globe className="size-4" /> Workspace</CardTitle><CardDescription>All projects, runs, screenshots and reports — plain files you can zip, move or inspect.</CardDescription></div></CardHeader>
           <CardContent className="flex flex-wrap items-center gap-3">
             <code className="flex-1 truncate rounded-lg border border-line bg-elevated px-3 py-2 font-mono text-xs">{health.data?.workspace}</code>
             <Button variant="secondary" onClick={() => openFolder.mutate()}><FolderOpen /> Open folder</Button>
+          </CardContent>
+        </Card>
+        <Card className="border-red-500/30">
+          <CardHeader><div><CardTitle className="flex items-center gap-2 text-red-400"><AlertTriangle className="size-4" /> Danger zone</CardTitle><CardDescription>Forget every change made on this page and go back to the defaults. Projects, runs and the API key are not touched.</CardDescription></div></CardHeader>
+          <CardContent className="flex items-center gap-3">
+            {confirmReset ? (
+              <>
+                <Button variant="danger" onClick={() => reset.mutate()} disabled={reset.isPending}>{reset.isPending ? <Loader2 className="animate-spin" /> : <RotateCcw />} Yes, reset settings</Button>
+                <Button variant="ghost" onClick={() => setConfirmReset(false)}>Cancel</Button>
+              </>
+            ) : <Button variant="secondary" onClick={() => setConfirmReset(true)}><RotateCcw /> Reset settings to defaults</Button>}
           </CardContent>
         </Card>
       </div>

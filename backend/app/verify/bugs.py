@@ -534,6 +534,12 @@ def finalize(
             png = media.annotate(raw, d.rect, caption, width)
             rel = f"artifacts/bugs/{bug.id}/annotated.png"
             repo.write_bytes(repo.run_path(run, rel), png)
+            if (
+                not blur and privacy.sidecar(source).exists()
+            ):  # lets exports blur it later if privacy is turned on
+                repo.write_text(
+                    privacy.sidecar(repo.run_path(run, rel)), privacy.sidecar(source).read_text("utf-8")
+                )
             bug.annotated_screenshot = rel
             frames = [(repo.run_path(run, p), c) for p, c in d.frames if p]
             clip = media.build_clip(

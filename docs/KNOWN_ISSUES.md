@@ -32,3 +32,5 @@ Things QA Pilot cannot verify or does not handle yet, each with the current fall
 | Permission matrix | "Expected" access is inferred from each role's menus during exploration; a screen the crawl did not reach for a role is assumed forbidden. | Hover a cell for the evidence; confirm holes on the bug page. |
 | Rule recalculation | Works only when the final page shows the numbers the rule needs; otherwise it is marked "not checked". | The agent's own verdict stands. |
 | Multi-viewport | Extra viewports multiply run time and cost by the number of sizes chosen. | Responsive and accessibility tests already check 768/390 px and are not repeated. |
+| pytest export | Recorded tests replay fixed data and click specific records (e.g. booking B-0006), so they depend on the application's data. Checks QA Pilot judged visually are kept as `# check by eye:` comments. | Reset test data before running the suite; `pytest -m "not full_mode"` runs only read-only tests. |
+| PDF reports | Large runs embed one screenshot per bug (≈100–150 KB each). | The bug-only and single-bug PDFs are smaller. |

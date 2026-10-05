@@ -39,9 +39,9 @@ class Recorder:
         rel = f"{self.base}/step-{step:02d}.jpg"
         path = self.repo.run_path(self.run, rel)
         self.repo.write_bytes(path, media.to_jpeg(png))
-        rects = privacy.pii_rects(self.session.driver)
-        if rects:
-            self.repo.write_text(privacy.sidecar(path), json.dumps(rects))
+        pii = privacy.pii_rects(self.session.driver)
+        if pii:
+            self.repo.write_text(privacy.sidecar(path), privacy.sidecar_text(pii))
         self.last_shot, self.last_png = rel, png
         self._drain(step)
         return png

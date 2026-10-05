@@ -68,29 +68,43 @@ for (const link of document.querySelectorAll('a, button')) {
     }
   }
 }
-return rects.slice(0, 400);
+return {width: innerWidth, rects: rects.slice(0, 400)};
 """
 
 
-def pii_rects(driver: Any) -> list[dict[str, float]]:
+def pii_rects(driver: Any) -> dict[str, Any] | None:
+    """{"width": viewport CSS width, "rects": [...]} or None when nothing personal is on screen."""
     try:
-        return driver.execute_script(PII_RECTS_JS) or []
+        data = driver.execute_script(PII_RECTS_JS)
     except Exception:  # privacy detection must never break a test
-        return []
+        return None
+    return data if isinstance(data, dict) and data.get("rects") else None
 
 
 def sidecar(path: Path) -> Path:
     return path.with_name(path.name + ".pii.json")
 
 
-def load_rects(path: Path) -> list[dict[str, float]]:
+def sidecar_text(data: dict[str, Any]) -> str:
+    return json.dumps(data)
+
+
+def load(path: Path) -> tuple[list[dict[str, float]], int | None]:
+    """Rects and the viewport width they were measured at (older sidecars are a bare list)."""
     side = sidecar(path)
     if not side.exists():
-        return []
+        return [], None
     try:
-        return json.loads(side.read_text(encoding="utf-8"))
+        data = json.loads(side.read_text(encoding="utf-8"))
     except (OSError, ValueError):
-        return []
+        return [], None
+    if isinstance(data, list):
+        return data, None
+    return list(data.get("rects") or []), data.get("width")
+
+
+def load_rects(path: Path) -> list[dict[str, float]]:
+    return load(path)[0]
 
 
 def blur(
@@ -117,10 +131,10 @@ def blur(
     return buf.getvalue()
 
 
-def blurred_bytes(path: Path, viewport_width: int = 1440) -> bytes:
+def blurred_bytes(path: Path, viewport_width: int | None = None) -> bytes:
     data = path.read_bytes()
-    rects = load_rects(path)
-    return blur(data, rects, viewport_width) if rects else data
+    rects, measured = load(path)
+    return blur(data, rects, measured or viewport_width or 1440) if rects else data
 
 
 def privacy_enabled(project: Any, domain: str) -> bool:

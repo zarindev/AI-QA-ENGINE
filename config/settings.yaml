@@ -116,6 +116,12 @@ safety:
 privacy:
   blur_by_default_domains: [healthcare, banking]
 
+branding:                 # shown on PDF / Excel reports (Settings → Branding)
+  company_name: ""        # e.g. "Acme QA" — "Prepared by …" on report covers
+  prepared_for: ""        # client name on the cover (optional)
+  accent_color: "#2563EB" # cover gradient, headings
+  logo_path: ""           # optional PNG / SVG file on this computer
+
 server:
   host: 127.0.0.1
   port: 8000

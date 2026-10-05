@@ -9,7 +9,6 @@ Every navigation and click goes through the Safe Mode guard first.
 from __future__ import annotations
 
 import io
-import json
 import time
 from collections import deque
 from collections.abc import Callable
@@ -392,9 +391,11 @@ class Crawler:
         shot_rel = f"artifacts/screenshots/crawl/{role_dir}/{page_id}.png"
         thumb_rel = f"artifacts/screenshots/crawl/{role_dir}/{page_id}.thumb.jpg"
         self.repo.write_bytes(self.repo.run_path(self.run, shot_rel), png)
-        rects = privacy.pii_rects(session.driver)
-        if rects:
-            self.repo.write_text(privacy.sidecar(self.repo.run_path(self.run, shot_rel)), json.dumps(rects))
+        pii = privacy.pii_rects(session.driver)
+        if pii:
+            self.repo.write_text(
+                privacy.sidecar(self.repo.run_path(self.run, shot_rel)), privacy.sidecar_text(pii)
+            )
         self.repo.write_bytes(self.repo.run_path(self.run, thumb_rel), _thumbnail(png))
         console, failed = session.drain()
         links = [self._norm(u) for u in snap.absolute_links(final)]

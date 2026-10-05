@@ -384,7 +384,7 @@ Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 <img src="docs/assets/logo.svg" width="56" alt="">
 
-**Muzahidul Rahman**<br>
+**Md Zarin Tasnim**<br>
 QA Automation Engineer & AI Automation Developer
 
 Need QA automation or a custom testing tool for your app? Let's talk.

@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# QA Pilot: block commits that contain API keys, .env files or workspace data.
+PY=".venv/bin/python"
+[ -x "$PY" ] || PY=".venv/Scripts/python.exe"
+[ -x "$PY" ] || PY="python3"
+exec "$PY" scripts/check_secrets.py

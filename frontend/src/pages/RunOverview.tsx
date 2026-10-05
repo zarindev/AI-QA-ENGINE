@@ -7,7 +7,7 @@ import {
   AlertTriangle, Brain, Bug as BugIcon, ClipboardList, Coins, Download, Gauge, ListChecks, ExternalLink, FileText, Image as ImageIcon, Loader2, Network, Radio, RotateCcw, ShieldBan, Square,
 } from "lucide-react";
 import { api, fileUrl, type Run } from "@/lib/api";
-import { DOMAIN_LABELS, duration, pct } from "@/lib/utils";
+import { DOMAIN_LABELS, activeDuration, pct } from "@/lib/utils";
 import { useRunEvents, type RunEvent } from "@/hooks/useRunEvents";
 import { PageHeader } from "@/components/PageHeader";
 import { StageStepper } from "@/components/StageStepper";
@@ -42,7 +42,7 @@ export function RunOverview() {
           <span className="flex flex-wrap items-center gap-2">
             <Badge tone={statusTone(r.status)}>{live && <Loader2 className="animate-spin" />}{r.status}</Badge>
             <Badge tone={r.mode === "full" ? "warn" : "pass"}>{r.mode} mode</Badge>
-            <span>{duration(r.started_at, r.finished_at)}</span>
+            <span title="Time spent working (pauses between resumes are not counted)">{activeDuration(r.stages)}</span>
             {r.token_usage.requests > 0 && <span className="flex items-center gap-1"><Coins className="size-3.5" /> ${r.token_usage.cost_usd.toFixed(3)} · {r.token_usage.requests} AI calls</span>}
           </span>
         }

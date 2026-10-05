@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Background, Controls, Handle, MiniMap, Position, ReactFlow, type Node, type NodeProps } from "@xyflow/react";
+import { Background, Controls, Handle, Position, ReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Boxes, Database, FileText, LayoutGrid, Network, Sparkles, User, X } from "lucide-react";
 import { api, type FlowNode } from "@/lib/api";
@@ -89,7 +89,6 @@ export function SiteModel() {
             onNodeClick={(_, n) => setSelected(n as unknown as FlowNode)} onPaneClick={() => setSelected(null)} proOptions={{ hideAttribution: true }}>
             <Background color="rgba(148,163,184,0.15)" gap={22} />
             <Controls showInteractive={false} />
-            <MiniMap pannable zoomable bgColor="transparent" nodeColor={(n) => COLOR[String(n.type)] ?? "#64748b"} maskColor="rgba(10,15,28,0.55)" />
           </ReactFlow>
           {selected && <NodePanel node={selected} onClose={() => setSelected(null)} />}
         </Card>

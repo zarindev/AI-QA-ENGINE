@@ -17,12 +17,26 @@ export function timeAgo(iso?: string | null): string {
   return `${days} d ago`;
 }
 
-export function duration(start?: string | null, end?: string | null): string {
-  if (!start) return "—";
-  const ms = (end ? new Date(end).getTime() : Date.now()) - new Date(start).getTime();
-  const s = Math.max(0, Math.round(ms / 1000));
+function span(start?: string | null, end?: string | null): number {
+  if (!start) return 0;
+  return Math.max(0, (end ? new Date(end).getTime() : Date.now()) - new Date(start).getTime());
+}
+
+export function formatMs(ms: number): string {
+  const s = Math.round(ms / 1000);
   if (s < 60) return `${s}s`;
-  return `${Math.floor(s / 60)}m ${s % 60}s`;
+  if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s`;
+  return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+}
+
+export function duration(start?: string | null, end?: string | null): string {
+  return start ? formatMs(span(start, end)) : "—";
+}
+
+/** Time the run actually worked: the sum of its stages (a paused-then-resumed run does not count the pause). */
+export function activeDuration(stages: Record<string, { started_at: string | null; finished_at: string | null }>): string {
+  const total = Object.values(stages).reduce((sum, st) => sum + span(st.started_at, st.finished_at), 0);
+  return total ? formatMs(total) : "—";
 }
 
 export function pct(value: number): string {

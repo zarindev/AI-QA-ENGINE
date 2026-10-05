@@ -14,7 +14,7 @@ from typing import Any
 
 from app.core.logging import get_logger
 from app.jobs import pipeline
-from app.jobs.run_state import RunTracker
+from app.jobs.run_state import RunTracker, heartbeat
 from app.storage.repository import Repository
 from app.storage.schemas import Run
 
@@ -71,7 +71,7 @@ class JobExecutor:
                 raise RuntimeError(f"Run {run.id} is already running")
             self._trackers[run.id] = tracker
             self._futures[run.id] = self._pool.submit(
-                target or pipeline.execute, self.repo, tracker, overrides
+                _with_heartbeat, target or pipeline.execute, self.repo, tracker, overrides
             )
 
     def is_running(self, run_id: str) -> bool:
@@ -91,3 +91,13 @@ class JobExecutor:
         for tracker in list(self._trackers.values()):
             tracker.cancel_requested.set()
         self._pool.shutdown(wait=False, cancel_futures=True)
+
+
+def _with_heartbeat(
+    target: Callable[[Repository, RunTracker, dict[str, Any] | None], None],
+    repo: Repository,
+    tracker: RunTracker,
+    overrides: dict[str, Any] | None,
+) -> None:
+    with heartbeat(tracker):
+        target(repo, tracker, overrides)

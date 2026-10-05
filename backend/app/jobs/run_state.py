@@ -9,7 +9,8 @@ from __future__ import annotations
 import json
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from typing import Any
 
 from app.core.logging import get_logger
@@ -172,8 +173,35 @@ class RunCancelled(Exception):
     pass
 
 
-def mark_interrupted_runs(repo: Repository, stale_after_s: int = 60) -> list[Run]:
-    """On startup: any run still 'running' belongs to a previous process that died. Mark it resumable."""
+HEARTBEAT_S = 20  # a working run writes run.json at least this often
+STALE_AFTER_S = 90  # no heartbeat for this long → the process that ran it is gone
+
+
+@contextmanager
+def heartbeat(tracker: RunTracker, every_s: float = HEARTBEAT_S) -> Iterator[None]:
+    """Keep `heartbeat_at` fresh while a job runs, even during long steps that report no progress, so another
+    QA Pilot process opening the same workspace does not mistake the run for an abandoned one."""
+    stop = threading.Event()
+
+    def beat() -> None:
+        while not stop.wait(every_s):
+            if tracker.run.status == "running":
+                try:
+                    tracker.save()
+                except OSError as exc:
+                    log.warning("heartbeat failed: %s", exc)
+
+    thread = threading.Thread(target=beat, name=f"heartbeat-{tracker.run.id}", daemon=True)
+    thread.start()
+    try:
+        yield
+    finally:
+        stop.set()
+
+
+def mark_interrupted_runs(repo: Repository, stale_after_s: int = STALE_AFTER_S) -> list[Run]:
+    """On startup: a run still 'running' whose heartbeat stopped belongs to a process that died. Mark it resumable.
+    Runs with a fresh heartbeat are left alone — another QA Pilot process may be working on them."""
     marked = []
     now = utcnow()
     for project in repo.list_projects():

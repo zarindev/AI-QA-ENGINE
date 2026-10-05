@@ -25,6 +25,7 @@ if [ ! -f .env ]; then
   echo "Created .env (add your ANTHROPIC_API_KEY there, or paste it in the app)."
 fi
 mkdir -p workspace
+if [ -d .git ]; then git config core.hooksPath .githooks && echo "Secret check enabled for git commits."; fi
 
 .venv/bin/python - <<'PY'
 import sys

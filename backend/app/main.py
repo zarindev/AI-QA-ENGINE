@@ -24,8 +24,8 @@ log = get_logger("server")
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    setup_logging()
-    marked = mark_interrupted_runs(repo(), stale_after_s=0)
+    setup_logging(log_file=repo().root / "logs" / "qa-pilot.log")
+    marked = mark_interrupted_runs(repo())
     if marked:
         log.info("Marked %d unfinished run(s) from a previous session as interrupted", len(marked))
     yield

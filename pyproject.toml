@@ -23,6 +23,8 @@ ignore = ["E501", "B008"]
 [tool.black]
 line-length = 110
 target-version = ["py311"]
+# Demo apps are kept compact on purpose (planted-bug markers sit next to the code they describe).
+extend-exclude = "demo_targets/"
 
 [tool.mypy]
 python_version = "3.11"

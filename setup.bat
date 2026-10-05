@@ -23,6 +23,7 @@ if not exist .env (
   echo Created .env ^(add your ANTHROPIC_API_KEY there, or paste it in the app^).
 )
 if not exist workspace mkdir workspace
+if exist .git (git config core.hooksPath .githooks && echo Secret check enabled for git commits.)
 
 .venv\Scripts\python.exe -c "import sys; sys.path.insert(0, 'backend'); from app.browser.driver import chrome_available; print('Google Chrome: found' if chrome_available() else 'Google Chrome: NOT FOUND - install it from https://www.google.com/chrome/')"
 

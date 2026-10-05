@@ -123,3 +123,15 @@ body {
   background: var(--panel-solid);
   border-radius: 10px;
 }
+/* React Flow 12 draws the minimap and controls from these variables (white by default). */
+.react-flow {
+  --xy-minimap-background-color: var(--panel-solid);
+  --xy-minimap-mask-background-color: rgba(10, 15, 28, 0.55);
+  --xy-minimap-node-background-color: #64748b;
+  --xy-controls-button-background-color: var(--panel-solid);
+  --xy-controls-button-background-color-hover: var(--primary-soft);
+  --xy-controls-button-color: var(--text);
+  --xy-controls-button-color-hover: var(--text);
+  --xy-controls-button-border-color: var(--border);
+  --xy-background-color: transparent;
+}

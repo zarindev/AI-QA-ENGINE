@@ -37,6 +37,9 @@ class _RedactingFilter(logging.Filter):
 _configured = False
 
 
+_files: set[str] = set()
+
+
 def setup_logging(level: int = logging.INFO, log_file: Path | None = None) -> None:
     global _configured
     root = logging.getLogger("qap")
@@ -53,7 +56,8 @@ def setup_logging(level: int = logging.INFO, log_file: Path | None = None) -> No
         for noisy in ("selenium", "urllib3", "httpx", "httpx2", "anthropic"):
             logging.getLogger(noisy).setLevel(logging.WARNING)
         _configured = True
-    if log_file is not None:
+    if log_file is not None and str(log_file) not in _files:
+        _files.add(str(log_file))
         log_file.parent.mkdir(parents=True, exist_ok=True)
         fh = logging.FileHandler(log_file, encoding="utf-8")
         fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)-7s %(name)s: %(message)s"))

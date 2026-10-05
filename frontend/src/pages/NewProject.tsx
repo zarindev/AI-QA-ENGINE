@@ -142,7 +142,7 @@ export function NewProject() {
                   </label>
                   <div>
                     <Label htmlFor="who">Your name</Label>
-                    <Input id="who" placeholder="Muzahidul Rahman" value={authorizedBy} onChange={(e) => setAuthorizedBy(e.target.value)} />
+                    <Input id="who" placeholder="Your name" value={authorizedBy} onChange={(e) => setAuthorizedBy(e.target.value)} />
                   </div>
                 </div>
               )}

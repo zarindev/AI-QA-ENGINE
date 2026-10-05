@@ -28,7 +28,7 @@ from app.browser.driver import BrowserSession  # noqa: E402
 CS = ROOT / "docs" / "case-study"
 SHOTS = ROOT / "docs" / "assets" / "screenshots"
 EXPORT = CS / "export"
-AUTHOR = "Muzahidul Rahman"
+AUTHOR = "Md Zarin Tasnim"
 ROLE = "QA Automation Engineer & AI Automation Developer"
 GALLERY = [  # Upwork gallery, in upload order: (slide number, file name)
     (3, "01-solution"),

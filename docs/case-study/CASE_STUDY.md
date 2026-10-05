@@ -2,7 +2,7 @@
 
 *Give it a URL. It learns the app, writes the tests, runs them, and reports the bugs.*
 
-**Muzahidul Rahman** · QA Automation Engineer & AI Automation Developer ·
+**Md Zarin Tasnim** · QA Automation Engineer & AI Automation Developer ·
 [PDF version](export/QA-Pilot-Case-Study.pdf) · [Source](https://github.com/YOUR_USERNAME/qa-pilot)
 
 ![Cover](export/slides/slide-01.png)

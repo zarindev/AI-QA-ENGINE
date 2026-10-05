@@ -11,7 +11,7 @@
 ```
 PROJECT_NAME   = QA Pilot
 TAGLINE        = Give it a URL. It learns the app, writes the tests, runs them, and reports the bugs.
-AUTHOR_NAME    = Muzahidul Rahman
+AUTHOR_NAME    = Md Zarin Tasnim
 AUTHOR_ROLE    = QA Automation Engineer & AI Automation Developer
 GITHUB_URL     = https://github.com/YOUR_USERNAME/qa-pilot      (leave as placeholder)
 UPWORK_URL     = https://www.upwork.com/freelancers/YOUR_PROFILE (leave as placeholder)
